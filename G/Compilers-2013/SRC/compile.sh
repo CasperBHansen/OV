@@ -30,7 +30,7 @@ mosmlc -c Type.sig Type.sml
 mosmlc -liberal -c Parser.sig Parser.sml
 
 # builds the LL1 versions of the Parser
-mosmlc -c LL1Parser.sml
+# mosmlc -c LL1Parser.sml
 
 # builds the Lexer
 mosmlc -c Lexer.sml

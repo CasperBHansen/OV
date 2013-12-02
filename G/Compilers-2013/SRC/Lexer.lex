@@ -29,46 +29,29 @@
    be to encode every keyword as a regexp. This one is much easier. *)
  fun keyword (s, pos) =
      case s of
-        "program"       => LL1Parser.TProgram   pos
-       | "function"     => LL1Parser.TFunction  pos
-       | "procedure"    => LL1Parser.TProcedure pos
-       | "var"          => LL1Parser.TVar       pos
-       | "begin"        => LL1Parser.TBegin     pos
-       | "end"          => LL1Parser.TEnd       pos
-       | "if"           => LL1Parser.TIf     pos
-       | "then"         => LL1Parser.TThen   pos
-       | "else"         => LL1Parser.TElse   pos
-       | "while"        => LL1Parser.TWhile  pos
-       | "do"           => LL1Parser.TDo     pos
-       | "return"       => LL1Parser.TReturn pos
-       | "array"        => LL1Parser.TArray  pos
-       | "of"           => LL1Parser.TOf     pos
-       | "int"          => LL1Parser.TInt    pos
-       | "bool"         => LL1Parser.TBool   pos
-       | "char"         => LL1Parser.TChar   pos
-       | "and"          => LL1Parser.TAnd    pos
-(* not active yet, not in LL1Parser
-       | "or"           => LL1Parser.TOr     pos
-       | "not"          => LL1Parser.TNot    pos
-*)
-       | "true"         => LL1Parser.TBLit (true, pos)
-       | "false"        => LL1Parser.TBLit (false, pos)
-
-       | _              => LL1Parser.TId (s, pos)
-
-   (* "lex" will later be the generated function "Token" *)
-   fun repeat lex b
-              = let val res = lex b
-                in case res of
-                         LL1Parser.TEOF _ => []
-                       | other => other :: repeat lex b
-                end
-
-   fun Scan lex s = let val buf = createLexerString s
-                    in repeat lex buf
-                    end
-        handle LexicalError (msg,pos)
-           => (TextIO.output (TextIO.stdErr, msg ^ showPos pos ^"\n");[])
+         "program"      => Parser.Program     pos
+       | "function"     => Parser.Function    pos
+       | "procedure"    => Parser.Procedure   pos
+       | "var"          => Parser.Var         pos
+       | "begin"        => Parser.Begin       pos
+       | "end"          => Parser.End         pos
+       | "if"           => Parser.If          pos
+       | "then"         => Parser.Then        pos
+       | "else"         => Parser.Else        pos
+       | "while"        => Parser.While       pos
+       | "do"           => Parser.Do          pos
+       | "return"       => Parser.Return      pos
+       | "array"        => Parser.Array       pos
+       | "of"           => Parser.Of          pos
+       | "int"          => Parser.Int         pos
+       | "bool"         => Parser.Bool        pos
+       | "char"         => Parser.Char        pos
+       | "and"          => Parser.And         pos
+       | "or"           => Parser.Or          pos
+       | "not"          => Parser.Not         pos
+       | "true"         => Parser.LogicLit    (true, pos)
+       | "false"        => Parser.LogicLit    (false, pos)
+       | _              => Parser.Ident       s
 
 }
 
@@ -82,16 +65,17 @@ rule Token = parse
 
   | [`0`-`9`]+          { case Int.fromString (getLexeme lexbuf) of
                                NONE   => lexerError lexbuf "Bad integer"
-                             | SOME i => LL1Parser.TNLit (i, getPos lexbuf) }
+                             | SOME i => Parser.NumLit (i, getPos lexbuf) }
 
   | `'` ([` ` `!` `#`-`&` `(`-`[` `]`-`~`] | `\`[` `-`~`]) `'`
-                        { LL1Parser.TCLit
+                        { Parser.CharLit
 			    ((case String.fromCString (getLexeme lexbuf) of
 			       NONE => lexerError lexbuf "Bad char constant"
 			     | SOME s => String.sub(s,1)),
 			     getPos lexbuf) }
+
   | `"` ([` ` `!` `#`-`&` `(`-`[` `]`-`~`] | `\`[` `-`~`])* `"`
-                        { LL1Parser.TSLit
+                        { Parser.StringLit
 			    ((case String.fromCString (getLexeme lexbuf) of
 			       NONE => lexerError lexbuf "Bad string constant"
 			     | SOME s => String.substring(s,1,
@@ -99,28 +83,24 @@ rule Token = parse
 			     getPos lexbuf) }
 
   | [`a`-`z` `A`-`Z`] [`a`-`z` `A`-`Z` `0`-`9` `_`]*
-                        { keyword (getLexeme lexbuf,getPos lexbuf) }
-
-  | ":="                { LL1Parser.TAssign   (getPos lexbuf) }
-  | `+`                 { LL1Parser.TPlus     (getPos lexbuf) }
-  | `-`                 { LL1Parser.TMinus    (getPos lexbuf) }
-  | `*`                 { LL1Parser.TTimes    (getPos lexbuf) }
-  | `/`                 { LL1Parser.TSlash    (getPos lexbuf) }
-  | `=`                 { LL1Parser.TEq       (getPos lexbuf) }
-  | `<`                 { LL1Parser.TLess     (getPos lexbuf) }
-
-  | `(`                 { LL1Parser.TLParen   (getPos lexbuf) }
-  | `)`                 { LL1Parser.TRParen   (getPos lexbuf) }
-  | `[`                 { LL1Parser.TLBracket (getPos lexbuf) }
-  | `]`                 { LL1Parser.TRBracket (getPos lexbuf) }
-  | `{`                 { LL1Parser.TLCurly   (getPos lexbuf) }
-  | `}`                 { LL1Parser.TRCurly   (getPos lexbuf) }
-
-  | `,`                 { LL1Parser.TComma    (getPos lexbuf) }
-  | `;`                 { LL1Parser.TSemi     (getPos lexbuf) }
-  | `:`                 { LL1Parser.TColon    (getPos lexbuf) }
-
-  | eof                 { LL1Parser.TEOF      (getPos lexbuf) }
+                        { keyword (getLexeme lexbuf, getPos lexbuf) }
+  | ":="                { Parser.Assign    (getPos lexbuf) }
+  | `+`                 { Parser.Plus      (getPos lexbuf) }
+  | `-`                 { Parser.Minus     (getPos lexbuf) }
+  | `*`                 { Parser.Times     (getPos lexbuf) }
+  | `/`                 { Parser.Div       (getPos lexbuf) }
+  | `=`                 { Parser.Equal     (getPos lexbuf) }
+  | `<`                 { Parser.Less      (getPos lexbuf) }
+  | `(`                 { Parser.LParen    (getPos lexbuf) }
+  | `)`                 { Parser.RParen    (getPos lexbuf) }
+  | `[`                 { Parser.LBracket  (getPos lexbuf) }
+  | `]`                 { Parser.RBracket  (getPos lexbuf) }
+  | `{`                 { Parser.LCurly    (getPos lexbuf) }
+  | `}`                 { Parser.RCurly    (getPos lexbuf) }
+  | `,`                 { Parser.Comma     (getPos lexbuf) }
+  | `;`                 { Parser.Semi      (getPos lexbuf) }
+  | `:`                 { Parser.Colon     (getPos lexbuf) }
+  | eof                 { Parser.EOF       (getPos lexbuf) }
   | _                   { lexerError lexbuf "Illegal symbol in input" }
 
 ;
