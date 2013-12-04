@@ -24,7 +24,7 @@ structure TpInterpret :> TpInterpret = struct
       case TextIO.input1 stream of
           NONE       => ""
         | SOME #"\n" => "\n"
-        | SOME c => str c ^ inputLine stream
+        | SOME    c  => str c ^ inputLine stream
 
 (*************************************************)
 (*** Function table associates a function name ***)
