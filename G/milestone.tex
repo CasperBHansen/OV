@@ -43,23 +43,25 @@ Each subtask will be addressed in its own subsection of the document.
 
 \clearpage
 \section{Overview}
-\ldots
+We were given a compiler code with a top-down parser. This is very inefficient 
+and we had to change it to a bottom-up parser. We discarded all the settings 
+called LL1 and replaced it with 'parser' which would refer to our own parser. 
 
 \subsection{Planned schedule}
 Having a development schedule helps us keep things organized and makes sure
 that we can meet the deadlines. We provide our development schedule for our
 own benefit and such that the instructor can provide feedback on possible
-difficulties we may encounter, such that it can adjust it accordingly.
+difficulties we may encounter, such that it can be  adjusted accordingly.
 \begin{figure}[H]
 	\centering
 	\begin{tabular}{|l|c|c|c|}
 		\hline
 		{\bf Subtask} & {\bf Status} & {\bf Expected} & {\bf Deadline} \\ \hline
-		Parser & Done & On time & 6th December 2014 \\ \hline
-		Arithmetic and logic & N/A & N/A & N/A \\ \hline
-		Type inference- and checking & N/A & N/A & N/A \\ \hline
-		Code generation & N/A & N/A & N/A \\ \hline
-		Semantics & N/A & N/A & N/A \\ \hline
+		Parser & N/A & N/A & 6th December 2013 \\ \hline
+		Arithmetic and logic & N/A & N/A & 20th December 2013 \\ \hline
+		Type inference- and checking & N/A & N/A & 20th December 2013 \\ \hline
+		Code generation & N/A & N/A & 20th December 2013 \\ \hline
+		Semantics & N/A & N/A & 20th December 2013 \\ \hline
 	\end{tabular}
 	\label{table:schedule}
 	\caption{Our planned development schedule}
@@ -71,6 +73,7 @@ above, and unforeseen difficulties may or may not force us to reschedule.
 This section discusses the advancements, we have made in the above tasks.
 
 \subsection{Parser}
+<<<<<<< HEAD
 Our initial attempt at writing the bottom-up parser in place of the top-down
 LL1 parser was unsuccesful, and we had to revert all changes. This was because
 of a lack of understanding the code and also as a consequence of some of us
@@ -102,6 +105,16 @@ the documentation, as well as examples provided as course materials.
 As soon as one rule was implemented, most of the others followed right after.
 The most challenging part of this subtask was understanding the structure of
 the mosmlyac environment, as well as refreshing the SML language.
+=======
+The new parser was added to where LL1parser was before.
+All of the dependencies in Lexer.lex and Driver.sml have been corrected and Parser.grm has been added instead.
+The grammar rules specified in figure 3 in groupproject.pdf have been added.
+
+During the project we had trouble with LVAL and value, which we solved by adding the position to the type
+so that Absyn.LValue<LVAL> became Absyn.LValue<(LVAL*(int*int))> and Absyn.value similarly.
+
+If-then was given precedence to if-then-else to resolve a conflict, where multiple statements were present.
+>>>>>>> 51e6acab3193f210809d95bcdaa273ef8305420b
 
 \subsubsection{Tests}
 We didn't have enough resources to put extensive efforts into testing. We did,
@@ -110,7 +123,7 @@ time the parser had been succesfully migrated to the bottom-up method using
 context-free gramma in {\tt Parser.grm}, from the top-down {\tt LL1Parser.sml}
 all of these programs ran without any parser errors.
 
-\paragraph{One-shot testing}
+\paragraph{Single-shot testing}
 The testing has so far only involved single-shot testing, insofar as it has
 been applicable.
 
