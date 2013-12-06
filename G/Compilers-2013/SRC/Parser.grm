@@ -35,7 +35,9 @@
 %token <(int*int)> 			Array Begin Do Function If Else End Of Program
 							Procedure Return Then Var While
 
-%nonassoc Else
+/* associativity */
+%nonassoc                   Else
+%nonassoc                   IfThen
 
 /* non-terminals */
 %type <AbSyn.Prog>			Prog FunDecs
@@ -83,7 +85,7 @@ StmtSeq		: StmtSeq Semi Stmt 					{ $3 :: $1 }
 
 /* statements */
 Stmt 		: Ident LParen CallParams RParen		{ AbSyn.ProcCall($1, $3, $2) }
-			| If Exp Then Block 					{ AbSyn.IfThEl ($2, $4, [], $1) }
+			| If Exp Then Block %prec IfThen 		{ AbSyn.IfThen ($2, $4, $1) }
 			| If Exp Then Block Else Block 			{ AbSyn.IfThEl ($2, $4, $6, $1) }
 			| While Exp Do Block 					{ AbSyn.While ($2, $4, $1) }
 			| Return Exp							{ AbSyn.Return (SOME $2, $1) }
