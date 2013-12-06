@@ -53,8 +53,8 @@ struct
 
   and Dec = Dec of Ident * Pos
 
-  and LVAL = Var    of Ident                  (* e.g., x     *)
-           | Index  of Ident  * Exp list      (* arr[1,2,3]  *)
+  and LVAL = Var    of Ident                  * Pos (* e.g., x     *)
+           | Index  of Ident  * Exp list      * Pos (* arr[1,2,3]  *)
 
   and Stmt = Return   of Exp option                  * Pos (* return a[i];           *)
     |        ProcCall of FIdent * Exp list           * Pos (* my_proc(arr, x, y);    *)

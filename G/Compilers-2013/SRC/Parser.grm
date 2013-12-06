@@ -37,7 +37,7 @@
 
 /* associativity */
 %nonassoc                   Else
-%nonassoc                   IfThen
+/* %nonassoc                   IfThen */
 
 /* non-terminals */
 %type <AbSyn.Prog>			Prog FunDecs
@@ -56,8 +56,8 @@
 
 %type <AbSyn.Type>			Type
 %type <AbSyn.BasicVal>		BasicVal
-%type <AbSyn.LVAL*(int*int)>	LVAL
-%type <AbSyn.Value*(int*int)>	Value
+%type <(AbSyn.LVAL*(int*int))>  LVAL
+%type <(AbSyn.Value*(int*int))> Value
 
 %%
 
