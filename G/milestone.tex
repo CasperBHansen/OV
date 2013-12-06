@@ -78,6 +78,11 @@ The new parser was added to where LL1parser was before.
 All of the dependencies in Lexer.lex and Driver.sml have been corrected and Parser.grm has been added instead.
 The grammer rules specified in figure 3 in groupproject.pdf have been added.
 
+During the project we had trouble with LVAL and value, which we solved by adding the position to the type
+so that Absyn.LValue<LVAL> became Absyn.LValue<(LVAL*(int*int))> and Absyn.value similarly.
+
+If-then was given precedence to if-then-else to resolve a conflict, where multiple statements were present.
+
 \subsubsection{Tests}
 {\it not applicable at this time}%
 \paragraph{One-shot testing}
