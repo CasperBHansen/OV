@@ -50,7 +50,6 @@ struct
     |        ProcCall of Ident  * Exp list           * Pos (* my_proc(arr, x, y);    *)
     |        Assign   of LVAL   * Exp                * Pos (* Assignment: a[i]:=x+y; *)
     |        IfThEl   of Exp * StmtBlock * StmtBlock * Pos (* if x<y then d:=y-x; else d:=x-y; *)
-    |        IfThen   of Exp * StmtBlock             * Pos (* if x<y then d:=y-x; else d:=x-y; *)
     |        While    of Exp * StmtBlock             * Pos (* while a<b do begin x[i]:= a;a:=a+1 end *)
 
   and StmtBlock = Block of Dec list * Stmt list
