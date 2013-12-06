@@ -56,8 +56,8 @@
 
 %type <AbSyn.Type>			Type
 %type <AbSyn.BasicVal>		BasicVal
-%type <AbSyn.LVAL>			LVAL
-%type <AbSyn.Value>			Value
+%type <AbSyn.LVAL*(int*int)>	LVAL
+%type <AbSyn.Value*(int*int)>	Value
 
 %%
 
@@ -117,8 +117,8 @@ Exp 		: LParen Exp RParen						{ $2 }
 			| LCurly Exps RCurly					{ AbSyn.ArrLit ($2, $1) }
 			
 			/* variables and literals */
-			| LVAL									{ AbSyn.LValue ($1, (0,0)) }
-			| Value									{ AbSyn.Literal ($1, (0,0)) }
+			| LVAL									{ AbSyn.LValue (#1 $1, #2 $1) }
+			| Value									{ AbSyn.Literal (#1 $1, #2 $1) }
 			| StringLit								{ AbSyn.StrLit ($1) }
 
 			/* arithmetic */
