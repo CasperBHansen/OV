@@ -55,6 +55,12 @@
 %type <AbSyn.LVAL>			LVAL
 %type <AbSyn.Value>			Value
 
+/* Precedence */
+%prec                       IfThEl
+
+/* associativity */
+%nonassoc                   IfThEl
+
 %%
 
 /* program structure */
