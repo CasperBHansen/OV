@@ -1,0 +1,22 @@
+\subsubsection{Partial implementation}
+We have worked hard on getting the Parser implemented, as well as we would like,
+though we're still far off.
+
+In order to complete the Parser.grm, certain changes to the rest of the source
+(namely Driver.sml, Type.sml and AbSyn.sml) were required, as to facilitate
+the top-down approach, which is now used.
+
+
+% BAAH repetition!
+\paragraph{Changes to AbSyn.sml} were required in order to properly implement
+the top-down parser, which we now have.
+% In particular, we have changed the following:\\
+%% Listing/Other means of indicating changes.
+
+\paragraph{Changes to Type.sml} include changes that were required to resolve
+various issues stemming from changes to the rest of the source.
+
+\subsubsection{Future/Missing implementation(s) and Program pitfalls}
+As we have yet to implement the type-checker of our compiler, running Paladim
+with some files will result in Type errors.
+
