@@ -82,6 +82,7 @@ StmtSeq		: StmtSeq Semi Stmt 					{ $3 :: $1 }
 /* statements */
 Stmt 		: Ident LParen CallParams RParen		{ AbSyn.ProcCall($1, $3, $2) }
 			| If Exp Then Block Else Block 			{ AbSyn.IfThEl ($2, $4, $6, $1) }
+			| If Exp Then Block 					{ AbSyn.IfThen ($2, $4, $1) }
 			| While Exp Do Block 					{ AbSyn.While ($2, $4, $1) }
 			| Return Exp							{ AbSyn.Return (SOME $2, $1) }
 	 		| Return								{ AbSyn.Return (NONE, $1) }
