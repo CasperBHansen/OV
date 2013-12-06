@@ -71,16 +71,13 @@ rule Token = parse
                         { Parser.CharLit
 			    ((case String.fromCString (getLexeme lexbuf) of
 			       NONE => lexerError lexbuf "Bad char constant"
-			     | SOME s => String.sub(s,1)),
-			     getPos lexbuf) }
+			     | SOME s => String.sub(s,1)), getPos lexbuf) }
 
   | `"` ([` ` `!` `#`-`&` `(`-`[` `]`-`~`] | `\`[` `-`~`])* `"`
                         { Parser.StringLit
 			    ((case String.fromCString (getLexeme lexbuf) of
 			       NONE => lexerError lexbuf "Bad string constant"
-			     | SOME s => String.substring(s,1,
-							  String.size s - 2)),
-			     getPos lexbuf) }
+			     | SOME s => String.substring(s,1, String.size s - 2)), getPos lexbuf) }
 
   | [`a`-`z` `A`-`Z`] [`a`-`z` `A`-`Z` `0`-`9` `_`]*
                         { keyword (getLexeme lexbuf, getPos lexbuf) }

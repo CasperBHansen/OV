@@ -21,7 +21,7 @@ fi
 
 # builds abstract syntax tree (data type) modules
 mosmlc -c AbSyn.sml
-mosmlc -c TpAbSyn.sml
+# mosmlc -c TpAbSyn.sml
 
 # builds the type checker
 mosmlc -c Type.sig Type.sml

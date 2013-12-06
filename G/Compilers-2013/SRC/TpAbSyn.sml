@@ -28,7 +28,7 @@ struct
       BType of BasicType
     | Array of int * BasicType
 
-  type  Ident    = string  * Type
+  type Ident     = string  * Type
   type Signature = Type list * Type option
   type FIdent    = string * Signature
 
@@ -41,8 +41,8 @@ struct
     | LValue  of LVAL              * Pos
     | Plus    of Exp * Exp         * Pos      (* e.g., x + 3 *)
     | Minus   of Exp * Exp         * Pos      (* e.g., x - 3 *)
- (* | Times   of Exp * Exp         * Pos      (* e.g., x * 3 *)
-    | Div     of Exp * Exp         * Pos      (* e.g., x / 3 *)         *)
+    | Times   of Exp * Exp         * Pos      (* e.g., x * 3 *)
+    | Div     of Exp * Exp         * Pos      (* e.g., x / 3 *)
     | Equal   of Exp * Exp         * Pos      (* e.g., x = 3 *)
     | Less    of Exp * Exp         * Pos      (* e.g., a < b *)
     | And     of Exp * Exp         * Pos      (* e.g., (x<1) and y *)
