@@ -63,8 +63,10 @@ Prog		: Program Ident Semi FunDecs EOF		{ $4 };
 FunDecs		: FunDecs FunDec						{ $2 :: $1 }
 			| FunDec 								{ $1 :: [] };
 
-FunDec		: Procedure Ident LParen PDecl RParen Block Semi 		{ AbSyn.Proc ($2, $4, $6, $1) }
-			| Function Type Ident LParen PDecl RParen Block Semi 	{ AbSyn.Func ($2, $3, $5, $7, $1) };
+FunDec		: Procedure Ident LParen PDecl RParen Block Semi
+			{ AbSyn.Proc ($2, $4, $6, $1) }
+			| Function Ident LParen PDecl RParen Colon Type Block Semi
+			{ AbSyn.Func ($7, $2, $4, $8, $1) };
 
 Block 		: DBlock SBlock 						{ AbSyn.Block ($1, $2) };
 
@@ -121,6 +123,7 @@ Exp 		: LParen Exp RParen						{ $2 }
 			| Exp Div Exp 							{ AbSyn.Div ($1, $3, $2) }
 
 			/* logical */
+			| Exp Less Exp 							{ AbSyn.Less ($1, $3, $2) }
 			| Exp And Exp 							{ AbSyn.And ($1, $3, $2) }
 			| Exp Or Exp 							{ AbSyn.Or ($1, $3, $2) }
 			| Not Exp 								{ AbSyn.Not ($2, $1) }
