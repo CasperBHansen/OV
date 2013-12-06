@@ -172,15 +172,7 @@ struct
         (***         LValue( Index ((id, id_tp), new_inds), pos )  ***)
         (***       where `new_inds' are the typed version of `inds'***)
         (*************************************************************)
-        (*
-        let val inds_new = typeCheckExp( vtab, inds, UnknownType)
-            val id_new = typeCheckExp( vtab, id, UnknownType)
-            val (inds_tp, id_tp) = (typeOfExp inds_new, typeOfExp id_new)
-        in  if typesEqual(BType Int, inds_tp) andalso typesEqual(BType Array, id_tp)
-            then 1
-            else raise Error("bah!")
-        end
-        *)
+        
         raise Error( "in type check, indexed expression UNIMPLEMENTED, at ", pos)
 
       (* Must be modified to complete task 3 *)
