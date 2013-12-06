@@ -46,7 +46,7 @@ struct
     | Equal   of Exp * Exp         * Pos      (* e.g., x = 3 *)
     | Less    of Exp * Exp         * Pos      (* e.g., a < b *)
     | And     of Exp * Exp         * Pos      (* e.g., (x<1) and y *)
- (* | Or      of Exp * Exp         * Pos      (* e.g., (x=5) or y *)      *)
+    | Or      of Exp * Exp         * Pos      (* e.g., (x=5) or y *)
     | Not     of Exp               * Pos      (* e.g., not (x>3) *)
     | FunApp  of FIdent * Exp list * Pos      (* e.g., f(1, 3+x) *)
     | Map     of FIdent * Exp      * Pos      (* map(f,    {a1, ..., an}) == { f(a1), ..., f(an) }   *)
