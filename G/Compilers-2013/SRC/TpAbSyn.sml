@@ -46,7 +46,7 @@ struct
     | Equal   of Exp * Exp         * Pos      (* e.g., x = 3 *)
     | Less    of Exp * Exp         * Pos      (* e.g., a < b *)
     | And     of Exp * Exp         * Pos      (* e.g., (x<1) and y *)
-    | Or      of Exp * Exp         * Pos      (* e.g., (x=5) or y *)
+ (* | Or      of Exp * Exp         * Pos      (* e.g., (x=5) or y *)      *)
     | Not     of Exp               * Pos      (* e.g., not (x>3) *)
     | FunApp  of FIdent * Exp list * Pos      (* e.g., f(1, 3+x) *)
     | Map     of FIdent * Exp      * Pos      (* map(f,    {a1, ..., an}) == { f(a1), ..., f(an) }   *)
@@ -60,7 +60,6 @@ struct
     |        ProcCall of FIdent * Exp list           * Pos (* my_proc(arr, x, y);    *)
     |        Assign   of LVAL   * Exp                * Pos (* Assignment: a[i]:=x+y; *)
     |        IfThEl   of Exp * StmtBlock * StmtBlock * Pos (* if x<y then d:=y-x; else d:=x-y; *)
-    |        IfThen   of Exp * StmtBlock             * Pos (* if x<y then d:=y-x; else d:=x-y; *)
     |        While    of Exp * StmtBlock             * Pos (* while a<b do begin x[i]:= a;a:=a+1 end *)
 
   and StmtBlock = Block of Dec list * Stmt list
@@ -174,8 +173,6 @@ struct
     | pp_exp (Equal (e1, e2, _))    = "( " ^ pp_exp e1 ^ " = " ^ pp_exp e2 ^ " )"
     | pp_exp (Less  (e1, e2, _))    = "( " ^ pp_exp e1 ^ " < " ^ pp_exp e2 ^ " )"
     | pp_exp (And   (e1, e2, _))    = "( " ^ pp_exp e1 ^ " & " ^ pp_exp e2 ^ " )"
-    | pp_exp (Or    (e1, e2, _))    = "( " ^ pp_exp e1 ^ " | " ^ pp_exp e2 ^ " )"
-    | pp_exp (Not   (e1,     _))    = "!( " ^ pp_exp e1 ^ " )"
 
     | pp_exp (FunApp ((nm,_), args, _)) = nm ^ "( " ^ pp_exps args ^ " )"
     | pp_exp (Map    ((nm,_), arr , _)) = "map ( " ^ nm ^ ", " ^ pp_exp arr ^ " ) "
@@ -340,8 +337,6 @@ struct
     | typeOfExp ( Equal  (_,_,_) ) = BType Bool
     | typeOfExp ( Less   (_,_,_) ) = BType Bool
     | typeOfExp ( And    (_,_,_) ) = BType Bool
-    | typeOfExp ( Or     (_,_,_) ) = BType Bool
-    | typeOfExp ( Not    (_,  _) ) = BType Bool
 
     | typeOfExp ( LValue (Var    (_,t)      , _) ) = t
     | typeOfExp ( LValue (Index ((v,t),inds), p) ) =
@@ -393,8 +388,6 @@ struct
     | posOfExp  ( Equal  (_,_,p) ) = p
     | posOfExp  ( Less   (_,_,p) ) = p
     | posOfExp  ( And    (_,_,p) ) = p
-    | posOfExp  ( Or     (_,_,p) ) = p
-    | posOfExp  ( Not    (_,  p) ) = p
     | posOfExp  ( FunApp (_,_,p) ) = p
     | posOfExp  ( Map    (_,_,p) ) = p
 
@@ -403,7 +396,7 @@ struct
     | posOfStmt (ProcCall(_,_,p) ) = p
     | posOfStmt ( Assign (_,_,p) ) = p
     | posOfStmt ( While  (_,_,p) ) = p
-    | posOfStmt ( IfThEl (_,_,_,p) ) = p
+    | posOfStmt (IfThEl(_,_,_,p) ) = p
 
   (*  posOfExp ( d : Dec ) : Pos *)
   fun posOfDec  ( Dec    (_,  p) ) = p

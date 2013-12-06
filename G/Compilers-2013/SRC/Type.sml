@@ -172,6 +172,15 @@ struct
         (***         LValue( Index ((id, id_tp), new_inds), pos )  ***)
         (***       where `new_inds' are the typed version of `inds'***)
         (*************************************************************)
+        (*
+        let val inds_new = typeCheckExp( vtab, inds, UnknownType)
+            val id_new = typeCheckExp( vtab, id, UnknownType)
+            val (inds_tp, id_tp) = (typeOfExp inds_new, typeOfExp id_new)
+        in  if typesEqual(BType Int, inds_tp) andalso typesEqual(BType Array, id_tp)
+            then 1
+            else raise Error("bah!")
+        end
+        *)
         raise Error( "in type check, indexed expression UNIMPLEMENTED, at ", pos)
 
       (* Must be modified to complete task 3 *)
@@ -197,10 +206,26 @@ struct
         end
 
     (* Task 2 and 3: Some type-checking of operators should occur here. *)
-    | typeCheckExp ( vtab, AbSyn.Times (_, _, pos), _ ) =
-        raise Error ( "Task 2 not implemented yet in type-checker ", pos )
-    | typeCheckExp ( vtab, AbSyn.Div   (_, _, pos), _ ) =
-        raise Error ( "Task 2 not implemented yet in type-checker ", pos )
+    | typeCheckExp ( vtab, AbSyn.Times (e1, e2, pos), _ ) =
+        let val e1_new = typeCheckExp(vtab, e1, UnknownType)
+            val e2_new = typeCheckExp(vtab, e2, UnknownType)
+            val (tp1, tp2) = (typeOfExp e1_new, typeOfExp e2_new)
+        in
+            if typesEqual(BType Int, tp1) andalso typesEqual(BType Int, tp2)
+            then Times(e1_new, e2_new, pos)
+            else raise Error("in type check minus exp, one argument is not of int type "^
+                             pp_type tp1^" and "^pp_type tp2^" at ", pos)
+        end
+    | typeCheckExp ( vtab, AbSyn.Div   (e1, e2, pos), _ ) =
+        let val e1_new = typeCheckExp(vtab, e1, UnknownType)
+            val e2_new = typeCheckExp(vtab, e2, UnknownType)
+            val (tp1, tp2) = (typeOfExp e1_new, typeOfExp e2_new)
+        in
+            if typesEqual(BType Int, tp1) andalso typesEqual(BType Int, tp2)
+            then Div(e1_new, e2_new, pos)
+            else raise Error("in type check minus exp, one argument is not of int type "^
+                             pp_type tp1^" and "^pp_type tp2^" at ", pos)
+        end
 
       (* Must be modified to complete task 3 *)
     | typeCheckExp ( vtab, AbSyn.Equal(e1, e2, pos), _ ) =
@@ -245,11 +270,22 @@ struct
                              pp_type tp1^" and "^pp_type tp2^" at ", pos)
         end
     (* Task 2 and 3: Some type-checking of operators should occur here. *)
-    | typeCheckExp ( vtab, AbSyn.Or  (_, _, pos), _ ) =
-        raise Error ( "Task 2 not implemented yet in type-checker ", pos )
-    | typeCheckExp ( vtab, AbSyn.Not (_,    pos), _ ) =
-        raise Error ( "Task 2 not implemented yet in type-checker ", pos )
-
+    | typeCheckExp ( vtab, AbSyn.Or  (e1, e2, pos), _ ) =
+        let val e1_new = typeCheckExp(vtab, e1, UnknownType )
+            val e2_new = typeCheckExp(vtab, e2, UnknownType )
+            val (tp1, tp2) = (typeOfExp e1_new, typeOfExp e2_new)
+        in  if  typesEqual(BType Bool, tp1) andalso typesEqual(BType Bool, tp2)
+            then And(e1_new, e2_new, pos)
+            else raise Error("in type check and exp, one argument is not of bool type "^
+                             pp_type tp1^" and "^pp_type tp2^" at ", pos)
+        end
+    | typeCheckExp ( vtab, AbSyn.Not (e1, pos), _ ) =
+        let val e1_new = typeCheckExp(vtab, e1, UnknownType )
+            val tp1 = typeOfExp e1_new
+        in  if typesEqual(BType Bool, tp1) then Not(e1_new, pos)
+            else raise Error("in type check and exp, one argument is not of bool type "^
+                              pp_type tp1^" at ", pos)
+        end
 
     (********************************************************************************)
     (*** SPECIAL CASES of Function Application (read & new USE THE Expected Type) ***)
