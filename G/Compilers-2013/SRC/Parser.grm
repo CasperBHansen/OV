@@ -123,6 +123,7 @@ Exp 		: LParen Exp RParen						{ $2 }
 			| Exp Div Exp 							{ AbSyn.Div ($1, $3, $2) }
 
 			/* logical */
+			| Exp Equal Exp 						{ AbSyn.Equal ($1, $3, $2) }
 			| Exp Less Exp 							{ AbSyn.Less ($1, $3, $2) }
 			| Exp And Exp 							{ AbSyn.And ($1, $3, $2) }
 			| Exp Or Exp 							{ AbSyn.Or ($1, $3, $2) }
