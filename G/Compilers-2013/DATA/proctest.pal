@@ -14,5 +14,7 @@ begin
    x := 2;
    y := 3;
    f(x, y);
-   write(x); write(' '); write(y);
+   write(x);
+   write(' ');
+   write(y);
 end;
