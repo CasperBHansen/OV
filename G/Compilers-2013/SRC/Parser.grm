@@ -56,8 +56,8 @@
 
 %type <AbSyn.Type>			Type
 %type <AbSyn.BasicVal>		BasicVal
-%type <AbSyn.LVAL*(int*int)>	LVAL
-%type <AbSyn.Value*(int*int)>	Value
+%type <AbSyn.LVAL>			LVAL
+%type <AbSyn.Value>			Value
 
 %%
 
@@ -90,7 +90,7 @@ Stmt 		: Ident LParen CallParams RParen		{ AbSyn.ProcCall($1, $3, $2) }
 			| While Exp Do Block 					{ AbSyn.While ($2, $4, $1) }
 			| Return Exp							{ AbSyn.Return (SOME $2, $1) }
 	 		| Return								{ AbSyn.Return (NONE, $1) }
-	 		| LVAL Assign Exp						{ AbSyn.Assign (#1 $1, $3, $2) };
+	 		| LVAL Assign Exp						{ AbSyn.Assign ($1, $3, $2) };
 
 /* variable and parameter declarations, types */
 PDecl		: Params 								{ $1 }
@@ -117,8 +117,8 @@ Exp 		: LParen Exp RParen						{ $2 }
 			| LCurly Exps RCurly					{ AbSyn.ArrLit ($2, $1) }
 			
 			/* variables and literals */
-			| LVAL									{ AbSyn.LValue (#1 $1, #2 $1) }
-			| Value									{ AbSyn.Literal (#1 $1, #2 $1) }
+			| LVAL									{ AbSyn.LValue ($1, (0,0)) }
+			| Value									{ AbSyn.Literal ($1, (0,0)) }
 			| StringLit								{ AbSyn.StrLit ($1) }
 
 			/* arithmetic */
