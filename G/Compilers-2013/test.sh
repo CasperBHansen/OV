@@ -5,5 +5,5 @@ if [[ $# -ne 1 ]]; then
     exit;
 else
     ARG=$1
-    ./SRC/compile.sh && ./BIN/Paladim -ti $(ARG);
+    ./SRC/compile.sh && ./BIN/Paladim -ti ${ARG};
 fi
