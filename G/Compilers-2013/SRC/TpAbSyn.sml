@@ -32,7 +32,10 @@ struct
   type Signature = Type list * Type option
   type FIdent    = string * Signature
 
-  (* Task 2: Uncomment the typed expression constructors Times, Div, Or, Not. *)
+  (* Task 2: Uncomment the typed expression constructors Times, Div, .......
+   * I have tried Or, Not, Times and Div. as well as implementing missing stuff (resulting in
+     * Pattern not exhaustive-warnings.
+     * Update: Now "only" syntax error *)
   datatype Exp
     = Literal of Value             * Pos
     | StrLit  of string            * Pos      (* e.g., "Hello World!\n" *)
@@ -168,12 +171,20 @@ struct
     | pp_exp (ArrLit  (els, _, _))  = " { " ^ pp_exps els ^ " } "
     | pp_exp (LValue  (lv,     _))  = pp_Lval lv
 
+    (* Arithmetic *)
     | pp_exp (Plus  (e1, e2, _))    = "( " ^ pp_exp e1 ^ " + " ^ pp_exp e2 ^ " )"
     | pp_exp (Minus (e1, e2, _))    = "( " ^ pp_exp e1 ^ " - " ^ pp_exp e2 ^ " )"
+    | pp_exp (Times (e1, e2, _))    = "( " ^ pp_exp e1 ^ " - " ^ pp_exp e2 ^ " )"
+    | pp_exp (Div   (e1, e2, _))    = "( " ^ pp_exp e1 ^ " - " ^ pp_exp e2 ^ " )"
+
+    (* Logical *)
     | pp_exp (Equal (e1, e2, _))    = "( " ^ pp_exp e1 ^ " = " ^ pp_exp e2 ^ " )"
     | pp_exp (Less  (e1, e2, _))    = "( " ^ pp_exp e1 ^ " < " ^ pp_exp e2 ^ " )"
     | pp_exp (And   (e1, e2, _))    = "( " ^ pp_exp e1 ^ " & " ^ pp_exp e2 ^ " )"
+    | pp_exp (Or    (e1, e2, _))    = "( " ^ pp_exp e1 ^ " & " ^ pp_exp e2 ^ " )"
+    | pp_exp (Not   (e1,     _))    = "( " ^ pp_exp e1 ^ " )"
 
+    (* App *)
     | pp_exp (FunApp ((nm,_), args, _)) = nm ^ "( " ^ pp_exps args ^ " )"
     | pp_exp (Map    ((nm,_), arr , _)) = "map ( " ^ nm ^ ", " ^ pp_exp arr ^ " ) "
 
@@ -332,11 +343,17 @@ struct
   fun typeOfExp ( Literal(v,  _) ) = typeOfVal v
     | typeOfExp ( StrLit (_,  _) ) = Array(1,Char)
     | typeOfExp ( ArrLit (_,t,_) ) = t
+    (* Arithmetic *)
     | typeOfExp ( Plus   (a,b,_) ) = typeOfExp a
     | typeOfExp ( Minus  (a,b,_) ) = typeOfExp a
+    | typeOfExp ( Times  (a,b,_) ) = typeOfExp a
+    | typeOfExp ( Div    (a,b,_) ) = typeOfExp a
+    (* Logical *)
     | typeOfExp ( Equal  (_,_,_) ) = BType Bool
     | typeOfExp ( Less   (_,_,_) ) = BType Bool
     | typeOfExp ( And    (_,_,_) ) = BType Bool
+    | typeOfExp ( Or     (_,_,_) ) = BType Bool
+    | typeOfExp ( Not    (_,_  ) ) = BType Bool
 
     | typeOfExp ( LValue (Var    (_,t)      , _) ) = t
     | typeOfExp ( LValue (Index ((v,t),inds), p) ) =
@@ -383,11 +400,18 @@ struct
     | posOfExp  ( StrLit (_,  p) ) = p
     | posOfExp  ( ArrLit (_,_,p) ) = p
     | posOfExp  ( LValue (_,  p) ) = p
+    (* Arithmetic *)
     | posOfExp  ( Plus   (_,_,p) ) = p
     | posOfExp  ( Minus  (_,_,p) ) = p
+    | posOfExp  ( Times  (_,_,p) ) = p
+    | posOfExp  ( Div    (_,_,p) ) = p
+    (* Logical *)
     | posOfExp  ( Equal  (_,_,p) ) = p
     | posOfExp  ( Less   (_,_,p) ) = p
     | posOfExp  ( And    (_,_,p) ) = p
+    | posOfExp  ( Or     (_,_,p) ) = p
+    | posOfExp  ( Not    (_,  p) ) = p
+
     | posOfExp  ( FunApp (_,_,p) ) = p
     | posOfExp  ( Map    (_,_,p) ) = p
 

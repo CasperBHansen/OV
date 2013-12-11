@@ -241,12 +241,23 @@ struct
         end
 
     (* Task 2: Some code-generation of operators should occur here. *)
-(*
+    (* Uncommented and started implementing *)
     | compileExp( vtable, Or(e1, e2, pos), place ) =
-        raise Error ( "Task 2 not implemented yet in code generator ", pos )
+        let val t1 = "or1_" ^ newName()
+            val c1 = compileExp(vtable, e1, t1)
+            val t2 = "or2_" ^ newName()
+            val c2 = compileExp(vtable, e2, t2)
+            val lA = "_or_" ^ newName()
+        in
+          c1 @ c2 @ [Mips.XORI (place, t1, t2) ]
+        end
     | compileExp( vtable, Not(e1, pos), place ) =
-        raise Error ( "Task 2 not implemented yet in code generator ", pos )
-*)
+        let val t1 = "not_" ^ newName()
+            val c1 = compileExp(vtable, e1, t1)
+            val lA = "_not_" ^ newName()
+        in
+          c1 @ [Mips. (place, t1, t2) ]
+        end
 
     | compileExp( vtab, FunApp (("len",(_,_)),args,pos), place ) =
        ( case args of
