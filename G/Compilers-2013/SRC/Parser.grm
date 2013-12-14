@@ -76,7 +76,7 @@ Block 		: DBlock SBlock 						{ AbSyn.Block ($1, $2) };
 DBlock		: Var Decs								{ $2 }
 			|										{ [] };
 
-SBlock		: Begin StmtSeq Semi End			    { $2 }
+SBlock		: Begin StmtSeq Semi End			    { List.rev $2 }
 			| Stmt 									{ $1 :: [] };
 
 StmtSeq		: StmtSeq Semi Stmt                    	{ $3 :: $1 }
