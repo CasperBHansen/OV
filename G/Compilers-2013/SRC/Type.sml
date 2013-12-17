@@ -159,7 +159,13 @@ struct
     | typeCheckExp( vtab, AbSyn.LValue( AbSyn.Index(id, inds), pos ), _ ) =
         let val inds_new = map (fn e => typeCheckExp(vtab, e, KnownType (BType Int))) inds
         in
-          raise Error( "in type check, indexed expression UNIMPLEMENTED, at ", pos)
+          ( case SymTab.lookup id vtab of
+              SOME id_tp => let
+                            in
+                              raise Error("not done, at ", pos)
+                            end
+            | NONE    => raise Error("No such identifier, at ", pos)
+          )
         end
         (*************************************************************)
         (*** TO DO: IMPLEMENT for G-ASSIGNMENT, TASK 4             ***)
