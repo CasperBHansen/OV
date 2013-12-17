@@ -1,0 +1,8 @@
+program exercise3;
+
+procedure main()
+var
+   n  : int;
+begin
+   chr( read() ) = read()
+end; // main
