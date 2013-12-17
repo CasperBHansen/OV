@@ -51,7 +51,7 @@
        | "not"          => Parser.Not         pos
        | "true"         => Parser.LogicLit    (true, pos)
        | "false"        => Parser.LogicLit    (false, pos)
-       | _              => Parser.Ident       s
+       | _              => Parser.Ident       (s, pos)
 
 }
 
