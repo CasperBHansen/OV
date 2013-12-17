@@ -309,30 +309,48 @@ struct
         raise Error("in type check call to read, type inference fails because "^
                     "of unknwon expected type, at ", pos)
 
-        (* function call to `new' uses expected type to infer the to-be-read result *)
+    (* function call to `new' uses expected type to infer the to-be-read result *)
     | typeCheckExp ( vtab, AbSyn.FunApp ("new", args, pos), etp ) =
         ( case expectedBasicType etp of
-            SOME btp => raise Error("in type check new UNIMPLEMENTED, i.e., G-ASSIGNMENT task 3, at ", pos)
+            SOME btp =>
                         (*************************************************************)
                         (*** Suggested implementation STEPS:                       ***)
                         (***    1. type check recursively all `args', denote the   ***)
                         (***          resulting (typed) arguments `new_args'.      ***)
                         (***          (hint: the arguments of new should be ints,  ***)
                         (***             hence expected type is ... ? )            ***)
+                        (***       DONE!                                           ***)
                         (***    2. get the types of `new_args' (via typeOfExp),    ***)
                         (***          denote them `arg_tps'                        ***)
+                        (***       DONE!                                           ***)
                         (***    3. check that all `arg_tps' are ints, i.e,BType Int***)
+                        (***       DONE!                                           ***)
                         (***    4. type of the result array is                     ***)
                         (***           `rtp = Array ( length args, btp )'          ***)
                         (***         and check the rank of the array is > 0        ***)
+                        (***       DONE!                                           ***)
                         (***                                                       ***)
                         (***    5. Result should be smth like                      ***)
                         (***       `FunApp(                                        ***)
                         (***          ("new", (arg_tps, SOME rtp)), new_args, pos  ***)
                         (***        )'                                             ***)
+                        (***       DONE!                                           ***)
+                        (***                                                       ***)
+                        (***       NOT YET TESTED!                                 ***)
                         (*************************************************************)
+                        let val new_args  = map (fn e => typeCheckExp(vtab, e, removeOneArrDim etp)) args
+                            val arg_tp    = typeOfExp (hd new_args)
+                            val arg_tps   = map typeOfExp new_args
+                            val ok_tps    = foldl ( fn (x, b) => b andalso typesEqual (BType Int, arg_tp) ) true arg_tps
+                        in if ok_tps then
+                              let val rtp = Array ( length args, btp )
+                              in if length args > 0 then FunApp(("new", (arg_tps, SOME rtp)), new_args, pos)
+                                 else raise Error("Array of rank 0 or less is not supported.", pos)
+                              end
+                           else raise Error("Not of same type", pos)
+                        end
           | NONE     => raise Error("in type check call to new, type inference fails because "^
-                                    "of unknwon expected basic type, at ", pos) )
+                                    "of unknown expected basic type, at ", pos) )
 
         (* all the other, i.e., regular, function calls *)
     | typeCheckExp ( vtab, AbSyn.FunApp (fid, args, pos), _ ) =
