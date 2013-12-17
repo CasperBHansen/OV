@@ -1,0 +1,13 @@
+program Map;
+
+function f(y : int) : int
+begin
+	return 2 * y;
+end;
+
+procedure main()
+var x : array of array of int;
+begin
+	x := { {1, 2, 3}, {4, 5, 6} };
+	write(x);
+end;

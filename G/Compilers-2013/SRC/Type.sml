@@ -313,8 +313,7 @@ struct
     (* function call to `new' uses expected type to infer the to-be-read result *)
     | typeCheckExp ( vtab, AbSyn.FunApp ("new", args, pos), etp ) =
         ( case expectedBasicType etp of
-            SOME btp =>
-                        (*************************************************************)
+            SOME btp => (*************************************************************)
                         (*** Suggested implementation STEPS:                       ***)
                         (***    1. type check recursively all `args', denote the   ***)
                         (***          resulting (typed) arguments `new_args'.      ***)

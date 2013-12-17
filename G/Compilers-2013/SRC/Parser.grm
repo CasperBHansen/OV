@@ -118,9 +118,8 @@ Type 		: Int 									{ AbSyn.Int ($1) }
 LVAL 		: Ident									{ AbSyn.Var ($1) }
 			| Ident LBracket Exps RBracket			{ AbSyn.Index ($1, $3) };
 
-Exp 		: Num                                   { AbSyn.Literal( AbSyn.BVal(AbSyn.Num(#1 $1)), #2 $1) }
-            | True                                  { AbSyn.Literal( AbSyn.BVal(AbSyn.Log(true )), $1   ) }
-            | False                                 { AbSyn.Literal( AbSyn.BVal(AbSyn.Log(false)), $1   ) }
+Exp 		: NumLit                                { AbSyn.Literal( AbSyn.BVal(AbSyn.Num(#1 $1)), #2 $1) }
+            | LogicLit                              { AbSyn.Literal( AbSyn.BVal(AbSyn.Log(#1 $1)), #2 $1) }
             | CharLit                               { AbSyn.Literal( AbSyn.BVal(AbSyn.Chr(#1 $1)), #2 $1) }
             | StringLit								{ AbSyn.StrLit (#1 $1, #2 $1) }
 			| LCurly Exps RCurly					{ AbSyn.ArrLit ($2, $1) }
@@ -145,8 +144,8 @@ Exp 		: Num                                   { AbSyn.Literal( AbSyn.BVal(AbSyn.
             | LParen Exp RParen						{ $2 }
 
 			/* variables and literals */
-            | ID LPAR Exps RPAR                     { AbSyn.FunApp (#1 $1, $3, #2 $1) }
-            | ID LPAR RPAR                          { AbSyn.FunApp (#1 $1, [], #2 $1) }
+            | Ident LParen Exps RParen              { AbSyn.FunApp (#1 $1, $3, #2 $1) }
+            | Ident LParen RParen                   { AbSyn.FunApp (#1 $1, [], #2 $1) };
 
 Value 		: BasicVal								{ AbSyn.BVal ($1) };
 
