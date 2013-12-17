@@ -157,12 +157,17 @@ struct
         )
 
     | typeCheckExp( vtab, AbSyn.LValue( AbSyn.Index(id, inds), pos ), _ ) =
+        let val inds_new = map (fn e => typeCheckExp(vtab, e, KnownType (BType Int))) inds
+        in
+          raise Error( "in type check, indexed expression UNIMPLEMENTED, at ", pos)
+        end
         (*************************************************************)
         (*** TO DO: IMPLEMENT for G-ASSIGNMENT, TASK 4             ***)
         (*** Suggested implementation STEPS:                       ***)
         (***    1. check that the indexes, `inds', are int exps    ***)
         (***       ( retorical question: what is the expected type ***)
         (***         when calling typeOfExp on each index? )       ***)
+        (***    DONE!                                              ***)
         (***    2. check that the type of `id' (the indexed array) ***)
         (***       is an array type, `id_tp' (via vtab lookup)     ***)
         (***       AND that the rank of `id_tp' equals the length  ***)
@@ -172,7 +177,19 @@ struct
         (***         LValue( Index ((id, id_tp), new_inds), pos )  ***)
         (***       where `new_inds' are the typed version of `inds'***)
         (*************************************************************)
-        raise Error( "in type check, indexed expression UNIMPLEMENTED, at ", pos)
+        (*
+         let val new_args  = map (fn e => typeCheckExp(vtab, e, removeOneArrDim etp)) args
+              val arg_tp    = typeOfExp (hd new_args)
+              val arg_tps   = map typeOfExp new_args
+              val ok_tps    = foldl ( fn (x, b) => b andalso typesEqual (BType Int, arg_tp) ) true arg_tps
+          in if ok_tps then
+                let val rtp = Array ( length args, btp )
+                in if length args > 0 then FunApp(("new", (arg_tps, SOME rtp)), new_args, pos)
+                   else raise Error("Array of rank 0 or less is not supported.", pos)
+                end
+             else raise Error("Not of same type", pos)
+          end
+          *)
 
       (* Must be modified to complete task 3 *)
     | typeCheckExp( vtab, AbSyn.Plus (e1, e2, pos), _ ) =

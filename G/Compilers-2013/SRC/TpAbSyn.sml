@@ -181,8 +181,8 @@ struct
     | pp_exp (Equal (e1, e2, _))    = "( " ^ pp_exp e1 ^ " = " ^ pp_exp e2 ^ " )"
     | pp_exp (Less  (e1, e2, _))    = "( " ^ pp_exp e1 ^ " < " ^ pp_exp e2 ^ " )"
     | pp_exp (And   (e1, e2, _))    = "( " ^ pp_exp e1 ^ " & " ^ pp_exp e2 ^ " )"
-    | pp_exp (Or    (e1, e2, _))    = "( " ^ pp_exp e1 ^ " & " ^ pp_exp e2 ^ " )"
-    | pp_exp (Not   (e1,     _))    = "( " ^ pp_exp e1 ^ " )"
+    | pp_exp (Or    (e1, e2, _))    = "( " ^ pp_exp e1 ^ " | " ^ pp_exp e2 ^ " )"
+    | pp_exp (Not   (e1,     _))    = "!( " ^ pp_exp e1 ^ " )"
 
     (* App *)
     | pp_exp (FunApp ((nm,_), args, _)) = nm ^ "( " ^ pp_exps args ^ " )"
