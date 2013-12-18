@@ -238,12 +238,7 @@ struct
                                                          
       (* Must be modified to complete task 3 *)
     | typeCheckExp ( vtab, AbSyn.Equal(e1, e2, pos), _ ) =
-        let val e1_new = typeCheckExp(vtab, e1, KnownType (BType Bool))
-                         (* case KnownType of
-                              BType Int  => typeCheckExp(vtab, e1, KnownType (BType Int ))
-                            | BType Char => typeCheckExp(vtab, e1, KnownType (BType Char))
-                            | BType Bool => typeCheckExp(vtab, e1, KnownType (BType Bool))
-                         *)
+        let val e1_new = typeCheckExp(vtab, e1, UnknownType)
             val e2_new = typeCheckExp(vtab, e2, KnownType (typeOfExp e1_new))
             val (tp1, tp2) = (typeOfExp e1_new, typeOfExp e2_new)
             (* check that tp1 is not an array type *)
@@ -259,7 +254,7 @@ struct
 
       (* Must be modified to complete task 3 *)
     | typeCheckExp ( vtab, AbSyn.Less (e1, e2, pos), _ ) =
-        let val e1_new = typeCheckExp(vtab, e1, KnownType (BType Bool) )
+        let val e1_new = typeCheckExp(vtab, e1, UnknownType )
             val e2_new = typeCheckExp(vtab, e2, KnownType (typeOfExp e1_new) )
             val (tp1, tp2) = (typeOfExp e1_new, typeOfExp e2_new)
             (* check that tp1 is not an array type *)
