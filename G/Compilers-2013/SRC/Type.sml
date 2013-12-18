@@ -158,9 +158,8 @@ struct
 
     | typeCheckExp( vtab, AbSyn.LValue( AbSyn.Index(id, inds), pos ), _ ) =
         let val new_inds = map (fn e => typeCheckExp(vtab, e, KnownType (BType Int))) inds
-            val ind_tp = typeOfExp (hd new_inds)
             val ind_tps = map typeOfExp new_inds
-            val ok_tps = foldl ( fn (x, b) => b andalso typesEqual (BType Int, ind_tp) ) true ind_tps
+            val ok_tps = foldl ( fn (x, b) => b andalso typesEqual (BType Int, (hd ind_tps)) ) true ind_tps
         in if ok_tps then
           ( case SymTab.lookup id vtab of
               SOME id_tp => let val (rank, btype) = case id_tp of
