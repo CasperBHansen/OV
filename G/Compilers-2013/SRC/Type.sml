@@ -361,7 +361,7 @@ struct
                         in if ok_tps then
                               let val rtp = Array ( length args, btp )
                               in if length args > 0 then FunApp(("new", (arg_tps, SOME rtp)), new_args, pos)
-                                 else raise Error("Array of rank 0 or less is not supported.", pos)
+                                 else raise Error("Invalid array rank, at ", pos)
                               end
                            else raise Error("Not of same type", pos)
                         end

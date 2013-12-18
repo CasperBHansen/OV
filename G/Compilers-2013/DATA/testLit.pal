@@ -20,7 +20,7 @@ begin
         j := 0;
         while j < 5 do
         begin
-            write(res[0,0]);
+            write(res[i,j]);
             write(", ");
             j := j + 1;
         end;

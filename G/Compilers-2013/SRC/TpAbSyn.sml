@@ -1,4 +1,3 @@
-
 structure TpAbSyn =
 struct
 
@@ -174,8 +173,8 @@ struct
     (* Arithmetic *)
     | pp_exp (Plus  (e1, e2, _))    = "( " ^ pp_exp e1 ^ " + " ^ pp_exp e2 ^ " )"
     | pp_exp (Minus (e1, e2, _))    = "( " ^ pp_exp e1 ^ " - " ^ pp_exp e2 ^ " )"
-    | pp_exp (Times (e1, e2, _))    = "( " ^ pp_exp e1 ^ " - " ^ pp_exp e2 ^ " )"
-    | pp_exp (Div   (e1, e2, _))    = "( " ^ pp_exp e1 ^ " - " ^ pp_exp e2 ^ " )"
+    | pp_exp (Times (e1, e2, _))    = "( " ^ pp_exp e1 ^ " * " ^ pp_exp e2 ^ " )"
+    | pp_exp (Div   (e1, e2, _))    = "( " ^ pp_exp e1 ^ " / " ^ pp_exp e2 ^ " )"
 
     (* Logical *)
     | pp_exp (Equal (e1, e2, _))    = "( " ^ pp_exp e1 ^ " = " ^ pp_exp e2 ^ " )"

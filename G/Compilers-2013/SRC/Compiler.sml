@@ -442,6 +442,14 @@ struct
         raise Error("variable "^"n"^" with empty index, at ", pos)
 
     | compileLVal( vtab : VTab, Index ((n,t),inds) : LVAL, pos : Pos ) =
+        ( case SymTab.lookup n vtab of
+            SOME m => let val mem = ([], Mem m)
+                          val Array(r, t) = basicType(t)
+                      in
+                        raise Error( "indexed variables UNIMPLEMENTED, at ", pos)
+                      end
+          | NONE   => raise Error ("unknown variable "^n, pos)
+        )
         (*************************************************************)
         (*** TODO: IMPLEMENT for G-ASSIGNMENT, TASK 4              ***)
         (*** Sugested implementation STEPS:                        ***)
@@ -465,7 +473,7 @@ struct
         (***     Bonus question: can you implement it without      ***)
         (***                        using the stored strides?      ***)
         (*************************************************************)
-        raise Error( "indexed variables UNIMPLEMENTED, at ", pos)
+        (* raise Error( "indexed variables UNIMPLEMENTED, at ", pos) *)
 
 
   (* instr.s for one statement. exitLabel is end (for control flow jumps) *)
