@@ -37,8 +37,8 @@
 
 %nonassoc ifprec
 %nonassoc Else
-%left Or
-%left And
+%right Or
+%right And
 %nonassoc Not
 %left Equal Less
 %left Plus Minus /* Negate */

@@ -1,0 +1,159 @@
+\documentclass[11pt]{article}
+
+\usepackage{amsmath,amssymb}	% for mathematical notation
+\usepackage{float} 				% put things exactly where I tell you!
+\usepackage{multicol} 			% for column layout
+\usepackage[utf8x]{inputenc} 	% can we has UTF-8, plox
+
+\title%
+{%
+	{\large Final Report}\\
+	Compilers
+}
+
+\author%
+{%
+	Andreas Dall Løfgren\\
+	{\tt jgc330@alumni.ku.dk}
+	\and
+	Paw Saabye Pedersen\\
+	{\tt hwx245@alumni.ku.dk}
+	\and
+	Casper B. Hansen\\
+	{\tt fvx507@alumni.ku.dk}
+}
+
+\begin{document}
+
+\clearpage
+\maketitle
+\thispagestyle{empty}
+\begin{multicols}{2}
+\begin{abstract}
+This document describes the development of the Paladim programming language,
+which is a pascal-like imperative language with functions and procedures, which
+uses multidimensional regular arrays.
+
+Each subtask will be addressed in its own subsection of the document.
+\end{abstract}
+\vfill
+\columnbreak%
+\tableofcontents
+\end{multicols}
+
+\clearpage
+\section{Overview}
+We were given a partial implemention of the paladim language. We had to modify the implementation by creating a new parser, adding support for the missing operations, implementing type checking, implementing array indexing and implementing a call-by-value-result.
+
+\subsection{Planned schedule}
+Having a development schedule helps us keep things organized and makes sure
+that we can meet the deadlines. We provide our development schedule for our
+own benefit and such that the instructor can provide feedback on possible
+difficulties we may encounter, such that it can be  adjusted accordingly.
+\begin{figure}[H]
+	\centering
+	\begin{tabular}{|l|c|c|c|}
+		\hline
+		{\bf Subtask} & {\bf Status} & {\bf Expected} & {\bf Deadline} \\ \hline
+		Parser & N/A & N/A & 6th December 2013 \\ \hline
+		Arithmetic and logic & N/A & N/A & 20th December 2013 \\ \hline
+		Type inference- and checking & N/A & N/A & 20th December 2013 \\ \hline
+		Code generation & N/A & N/A & 20th December 2013 \\ \hline
+		Semantics & N/A & N/A & 20th December 2013 \\ \hline
+	\end{tabular}
+	\label{table:schedule}
+	\caption{Our planned development schedule}
+\end{figure}
+The development schedule is, however, subject to change. For reasons given
+above, and unforeseen difficulties may or may not force us to reschedule.
+
+\section{Progress}
+This section discusses the advancements, we have made in the above tasks.
+
+We had completed task 1 when we submitted the milestone rapport.
+
+\subsection{Parser}
+We were given a compiler code with a top-down parser. This is very inefficient 
+and we had to change it to a bottom-up parser. We discarded all the settings 
+called LL1 and replaced it with 'parser' which would refer to our own parser 
+in attempt to create the context free Paladim language.
+\\
+Our initial attempt at writing the bottom-up parser in place of the top-down
+LL1 parser was unsuccesful, and we had to revert all changes. This was because
+of a lack of understanding the code and also as a consequence of some of us
+being a bit rusty in the SML language. And so the bottom-up parser was
+partially written while brushing up on the language in which it was written.
+
+For the second attempt we simply went into the {\tt compile.sh} shell script,
+and commented out the line which compiled the LL1 parser, making sure that any
+code that relied on {\tt LL1Parser.sml} was exposed, and could be accounted
+for by simply inspecting and migrating the dependency to the {\tt Parser.grm}
+instead. This proved to be very advantageous as it also gave us a complete
+overview of all the interdepencies and thereby allowed us to understand more
+about what we were actually doing.
+
+Firstly, we saw that {\tt Driver.sml} was performing calls on
+{\tt LL1Parser.sml}, which was conveniently commented and prepared for the
+transition over into {\tt Parser.grm}. So, commenting out and replacing these
+lines with the appropriate ones, as directed in the assignment text, we turned
+our attention to {\tt Lexer.lex}. The lexer depended heavily on
+{\tt LL1Parser.sml} as all tokens were declared in that file, which gave rise
+to declaring these in {\tt Parser.grm} instead, effectively removing that
+dependency. When all tokens were replaced, the first rule was implemented in
+{\tt Parser.grm}, the {\tt Prog} rule, which allowed us to see the parser
+working and sparked the epiphany of how it actually functioned --- this was,
+again, because we weren't used to working with the mosmlyac environment, and
+so getting things started was highly based on pure experimentation and reading
+the documentation, as well as examples provided as course materials.
+
+As soon as one rule was implemented, most of the others followed right after.
+The most challenging part of this subtask was understanding the structure of
+the mosmlyac environment, as well as refreshing the SML language.
+
+After the feedback on the milestone submission, we fixed a lot of shift/reduce conflicts and modified our expression type acording to the feedback provided.
+
+\subsubsection{Tests}
+We didn't have enough resources to put extensive efforts into testing. We did,
+however run each and every Paladim program provided in the DATA folder. By the
+time the parser had been succesfully migrated to the bottom-up method using
+context-free gramma in {\tt Parser.grm}, from the top-down {\tt LL1Parser.sml}
+all of these programs ran without any parser errors.
+
+\paragraph{Single-shot testing}
+The testing has so far only involved single-shot testing, insofar as it has
+been applicable.
+
+Generally we have tested the implementation by recompiling the source, and
+testing each file, thus, letting us see 1) the compiler output for any
+warnings/errors and 2) the programme output, so that we may verify that it
+is correct.
+
+\subsection{Arithmetic and logic}
+Some functions were missing in the code, namely times, divide, or and not. Those were necessary to implement in order for the remaining tasks to be completed.
+We have implemented the needed part in compileExp in compile.sml, which were commented for us. We have added the additional types in TpAbSyn.sml, which again were specified in comments. In TpInterpret.sml we have implemented all of the following functions: fun evalOr, fun evalNot, fun evalExp times, evalExp div evalExp Or and evalExp Not.
+
+We had problems making the pattern matching exhaustive in TpAbSyn, but solved all the warnings over time.
+
+\subsubsection{Tests}
+We ran the paladim programs in the DATA folder and we also created new programs to make sure that all the new functions have been implemented correctly.
+ 
+\subsection{Type inference- and checking}
+
+
+\subsubsection{Tests}
+{\it not applicable at this time}%
+
+\subsection{Code generation}
+We have not yet started on this part.
+
+\subsubsection{Tests}%
+{\it not applicable at this time}%
+
+\subsection{Semantics}
+We have not yet started on this part.
+
+\subsubsection{Tests}
+{\it not applicable at this time}%
+
+\end{document}
+
