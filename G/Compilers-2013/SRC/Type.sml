@@ -190,7 +190,7 @@ struct
         (***         LValue( Index ((id, id_tp), new_inds), pos )  ***)
         (***       where `new_inds' are the typed version of `inds'***)
         (*************************************************************)
-        
+
       (* Must be modified to complete task 3 *)
     | typeCheckExp( vtab, AbSyn.Plus (e1, e2, pos), _ ) =
 
@@ -235,11 +235,16 @@ struct
             else raise Error("in type check minus exp, one argument is not of int type "^
                              pp_type tp1^" and "^pp_type tp2^" at ", pos)
         end
-
+                                                         
       (* Must be modified to complete task 3 *)
     | typeCheckExp ( vtab, AbSyn.Equal(e1, e2, pos), _ ) =
-        let val e1_new = typeCheckExp(vtab, e1, UnknownType)
-            val e2_new = typeCheckExp(vtab, e2, UnknownType)
+        let val e1_new = typeCheckExp(vtab, e1, KnownType (BType Bool))
+                         (* case KnownType of
+                              BType Int  => typeCheckExp(vtab, e1, KnownType (BType Int ))
+                            | BType Char => typeCheckExp(vtab, e1, KnownType (BType Char))
+                            | BType Bool => typeCheckExp(vtab, e1, KnownType (BType Bool))
+                         *)
+            val e2_new = typeCheckExp(vtab, e2, KnownType (typeOfExp e1_new))
             val (tp1, tp2) = (typeOfExp e1_new, typeOfExp e2_new)
             (* check that tp1 is not an array type *)
             val () = case tp1 of
@@ -254,8 +259,8 @@ struct
 
       (* Must be modified to complete task 3 *)
     | typeCheckExp ( vtab, AbSyn.Less (e1, e2, pos), _ ) =
-        let val e1_new = typeCheckExp(vtab, e1, UnknownType)
-            val e2_new = typeCheckExp(vtab, e2, UnknownType )
+        let val e1_new = typeCheckExp(vtab, e1, KnownType (BType Bool) )
+            val e2_new = typeCheckExp(vtab, e2, KnownType (typeOfExp e1_new) )
             val (tp1, tp2) = (typeOfExp e1_new, typeOfExp e2_new)
             (* check that tp1 is not an array type *)
             val () = case tp1 of
