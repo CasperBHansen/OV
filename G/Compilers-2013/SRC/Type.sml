@@ -158,9 +158,8 @@ struct
 
     | typeCheckExp( vtab, AbSyn.LValue( AbSyn.Index(id, inds), pos ), _ ) =
         let val new_inds = map (fn e => typeCheckExp(vtab, e, KnownType (BType Int))) inds
-            val ind_tp = typeOfExp (hd new_inds)
             val ind_tps = map typeOfExp new_inds
-            val ok_tps = foldl ( fn (x, b) => b andalso typesEqual (BType Int, ind_tp) ) true ind_tps
+            val ok_tps = foldl ( fn (x, b) => b andalso typesEqual (BType Int, (hd ind_tps)) ) true ind_tps
         in if ok_tps then
           ( case SymTab.lookup id vtab of
               SOME id_tp => let val (rank, btype) = case id_tp of
@@ -190,7 +189,7 @@ struct
         (***         LValue( Index ((id, id_tp), new_inds), pos )  ***)
         (***       where `new_inds' are the typed version of `inds'***)
         (*************************************************************)
-        
+
       (* Must be modified to complete task 3 *)
     | typeCheckExp( vtab, AbSyn.Plus (e1, e2, pos), _ ) =
 
@@ -235,11 +234,11 @@ struct
             else raise Error("in type check minus exp, one argument is not of int type "^
                              pp_type tp1^" and "^pp_type tp2^" at ", pos)
         end
-
+                                                         
       (* Must be modified to complete task 3 *)
     | typeCheckExp ( vtab, AbSyn.Equal(e1, e2, pos), _ ) =
         let val e1_new = typeCheckExp(vtab, e1, UnknownType)
-            val e2_new = typeCheckExp(vtab, e2, UnknownType)
+            val e2_new = typeCheckExp(vtab, e2, KnownType (typeOfExp e1_new))
             val (tp1, tp2) = (typeOfExp e1_new, typeOfExp e2_new)
             (* check that tp1 is not an array type *)
             val () = case tp1 of
@@ -254,8 +253,8 @@ struct
 
       (* Must be modified to complete task 3 *)
     | typeCheckExp ( vtab, AbSyn.Less (e1, e2, pos), _ ) =
-        let val e1_new = typeCheckExp(vtab, e1, UnknownType)
-            val e2_new = typeCheckExp(vtab, e2, UnknownType )
+        let val e1_new = typeCheckExp(vtab, e1, UnknownType )
+            val e2_new = typeCheckExp(vtab, e2, KnownType (typeOfExp e1_new) )
             val (tp1, tp2) = (typeOfExp e1_new, typeOfExp e2_new)
             (* check that tp1 is not an array type *)
             val () = case tp1 of

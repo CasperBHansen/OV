@@ -1,0 +1,10 @@
+program Type;
+
+procedure main()
+
+var x : bool;
+
+begin
+  x := (chr(read()) = read());
+  write(x);
+end;
