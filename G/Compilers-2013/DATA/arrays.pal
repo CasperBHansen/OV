@@ -24,11 +24,12 @@ begin
     write("a: [");
     while i < n do
     begin
-      write(a[i]);
+      write(a[0]);
       i := i + 1;
       if not(i = n) then
         write(','); 
     end;
     write(']');
     write('\n');
+
 end; // main

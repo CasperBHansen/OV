@@ -447,24 +447,20 @@ struct
                           val rank  = case t of
                                         Array(r, btp) => r
                                       | tp => raise Error("Not an array, at ", pos)
-                          val indices = (map (fn el => ( case el of
-                                                                  Literal (BVal( Num i ), _) => i
-                                                              |   Literal (_, p)         => raise Error ("Not properly indexed at ", p)
-                                                              |   _                      => raise Error ("Shouldn't ever happen", (0,0)) )
-                                             ) inds )
+                          val code = map (fn e => ( compileExp(vtab, e, "_tmp"^newName())) ) inds
 (*
-                          fun chkBounds (i::is) d =
-                              [Mips.JAL("len",[Int.toString d, n])]
-                              @ [Mips.BNE("2", Int.toString (length is),"_IllegalArrIndexError_")]
-                              @ chkBounds is (d-1)
-                            | chkBounds _ 0 = []
+                          fun chkBounds addr d (r::rs) =
+                              [Mips.MOVE("2", addr)]
+                              @ [Mips.JAL("len",[Int.toString d, n])]
+                              @ [Mips.BNE("2", r,"_IllegalArrIndexError_")]
+                              @ chkBounds addr (d - 1) rs
+                            | chkBounds _ 0 _ = []
 *)
                       in if rank <= length inds then
-                          ( [] (* chkBounds indices rank *)
+                          ( hd code (* chkBounds indices rank *)
                           , Mem(m))
                          else
                           raise Error ("Indices inconsistent with array rank, at ", pos)
-(*                        raise Error( "indexed variables UNIMPLEMENTED, at ", pos) *)
                       end
           | NONE   => raise Error ("unknown variable "^n, pos)
         )
