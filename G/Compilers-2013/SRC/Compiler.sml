@@ -455,7 +455,7 @@ struct
                                 val cexp = compileExp ( vtab, e, loc )
                                 val exps = cexp @ 
                                            [ Mips.LA  ("2" , n                                     )
-                                           , Mips.JAL ("len", ["2"])                
+                                           , Mips.JAL ("len", ["2"]                                )                
                                            , Mips.SLT ("2"  , loc, "2"                             )
                                            , Mips.BNE ("2" , makeConst 1, "_IllegalArrIndexError_")]
                             in
