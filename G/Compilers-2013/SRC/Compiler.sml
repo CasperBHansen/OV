@@ -447,8 +447,9 @@ struct
                           val rank  = case t of
                                         Array(r, btp) => r
                                       | tp => raise Error("Not an array, at ", pos)
-                          val code = map (fn e => ( compileExp(vtab, e, "_tmp"^newName())) ) inds
-(*
+                          (*
+                          val (code, _) = map (fn e => ( compileExp(vtab, e, "_tmp"^newName())) ) inds
+(**)
                           fun chkBounds addr d (r::rs) =
                               [Mips.MOVE("2", addr)]
                               @ [Mips.JAL("len",[Int.toString d, n])]
@@ -457,7 +458,7 @@ struct
                             | chkBounds _ 0 _ = []
 *)
                       in if rank <= length inds then
-                          ( hd code (* chkBounds indices rank *)
+                          ( [] (* chkBounds indices rank *)
                           , Mem(m))
                          else
                           raise Error ("Indices inconsistent with array rank, at ", pos)
