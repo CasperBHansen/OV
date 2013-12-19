@@ -3,7 +3,8 @@
 \usepackage{amsmath,amssymb}	% for mathematical notation
 \usepackage{float} 				% put things exactly where I tell you!
 \usepackage{multicol} 			% for column layout
-\usepackage[utf8x]{inputenc} 	% can we has UTF-8, plox
+\usepackage[utf8]{inputenc} 	% can we has UTF-8, plox
+\usepackage{listings}           % for embedded code
 
 \title%
 {%
@@ -25,6 +26,7 @@
 
 \begin{document}
 
+\lstset{basicstyle=\ttfamily\scriptsize}
 \clearpage
 \maketitle
 \thispagestyle{empty}
@@ -125,17 +127,49 @@ been applicable.
 
 Generally we have tested the implementation by recompiling the source, and
 testing each file, thus, letting us see 1) the compiler output for any
-warnings/errors and 2) the programme output, so that we may verify that it
-is correct.
+warnings/errors and 2) the programme output, so that we may verify that it is correct.
 
 \subsection{Arithmetic and logic}
 Some functions were missing in the code, namely times, divide, or and not. Those were necessary to implement in order for the remaining tasks to be completed.
-We have implemented the needed part in compileExp in compile.sml, which were commented for us. We have added the additional types in TpAbSyn.sml, which again were specified in comments. In TpInterpret.sml we have implemented all of the following functions: fun evalOr, fun evalNot, fun evalExp times, evalExp div evalExp Or and evalExp Not.
 
-We had problems making the pattern matching exhaustive in TpAbSyn, but solved all the warnings over time.
+To start of with, we uncommented the parts of {\tt TpAbSyn.sml} which involved  those functions. We received some  warnings about pattern matching not exhaustive and some syntax errors, but they have all been fixed over time.
+
+In {\tt compile.sml } we found commented instructions on the new functions we had to create for compileExp, which compiled the new expressions. They were created by using the code from the similar looking functions, in case of times and div, we could use plus and minus as a base and in the case of Or and Not we used And. In the case of the logical expressions more tinkering had to be done, to take into account their differences.
+
+\begin{lstlisting}
+    | compileExp( vtable, Times(e1, e2, pos), place ) =
+        let val t1 = "times1_" ^ newName()
+            val c1 = compileExp(vtable, e1, t1)
+            val t2 = "times2_" ^ newName()
+            val c2 = compileExp(vtable, e2, t2)
+        in  c1 @ c2 @ [Mips.MUL (place,t1,t2) ]
+        
+    | compileExp( vtable, Or(e1, e2, pos), place ) =
+        let val t1 = "or1_" ^ newName()
+            val c1 = compileExp(vtable, e1, t1)
+            val t2 = "or2_" ^ newName()
+            val c2 = compileExp(vtable, e2, t2)
+            val lA = "_or_" ^ newName()
+        in
+          c1 @ c2 @ [Mips.ORI (place, t1, t2) ]
+        end
+\end{lstlisting}        
+
+In {\tt TpInterpret} we had to create new funtions for eval called evalOr and evalNot. They have a base taken from evalAnd with the changes necessary to get the required result.
+
+\begin{lstlisting}
+fun evalOr (BVal (Log b1), BVal (Log b2), pos) = BVal (Log (b1 orelse b2))
+  | evalOr (v1, v2, pos) = raise Error ( "Or: argument types do not match.\n" ^
+                                         "Arg1: " ^ pp_val v1 ^ "\n" ^
+                                         "Arg2: " ^ pp_val v2 ^ "\n", pos)
+                                         
+fun evalNot (BVal (Log bv), pos) = BVal (Log ( not bv ))
+  | evalNot (v,             pos) = raise Error ( "Not: argument type does not match.\n" ^
+                                                 "Arg: " ^ pp_val v ^ "\n", pos)
+\end{lstlisting}
 
 \subsubsection{Tests}
-We ran the paladim programs in the DATA folder and we also created new programs to make sure that all the new functions have been implemented correctly.
+We ran the paladim programs in the DATA folder and we also created new programs to make sure that all the new functions have been implemented correctly. We are currently working on precendence problems regarding And, Or and Not, but Times and Div are fully functional.
  
 \subsection{Type inference- and checking}
 
