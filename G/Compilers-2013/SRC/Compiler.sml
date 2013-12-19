@@ -443,9 +443,7 @@ struct
 
     | compileLVal( vtab : VTab, Index ((n,t),inds) : LVAL, pos : Pos ) =
         ( case SymTab.lookup n vtab of
-            SOME m => let val mem  = Mem m
-                          (* Redundant: Already checked in Type checking *)
-                          val rank = case t of
+            SOME m => let val rank = case t of
                                         Array(r, btp) => r
                                       | tp => raise Error("Not an array, at ", pos)
                           
@@ -454,15 +452,14 @@ struct
                             let val r_loc = "_ret_" ^ newName()
                                 val e_loc = "_tmp_" ^ newName()
                                 val cexp  = compileExp ( vtab, e, e_loc )
-                                val offs  = d * 4
                                 val exps  = mips @ cexp @ 
-                                           [ Mips.LW  (r_loc, m, makeConst offs                    )
+                                           [ Mips.LW  (r_loc, m, makeConst (d * 4)                 )
                                            , Mips.SLT (r_loc, e_loc, r_loc                         )
                                            , Mips.BEQ (r_loc, makeConst 1, "_IllegalArrIndexError_")]
                             in
                               checkDatFucker (d + 1, es, mips @ exps)
                             end;
-                      in if rank <= length inds then
+                      in if rank = length inds then
                           ( checkDatFucker (0, inds, []) (* chkBounds indices rank *)
                           , Mem(m))
                          else
@@ -480,6 +477,7 @@ struct
         (***     if a given index is out of bounds. If this is     ***)
         (***     the case your code needs to jump to the           ***)
         (***     label _IllegalArrIndexError_.                     ***)
+        (***     DONE!                                             ***)
         (***  3. Compute the flat index using the stored strides.  ***)
         (***     It might be easier to calculate the contribution  ***)
         (***     from the last index seperately, as the            ***)
