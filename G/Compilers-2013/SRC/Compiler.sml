@@ -439,12 +439,13 @@ struct
           | NONE     => raise Error ("unknown variable "^n, pos) )
 
     | compileLVal( vtab : VTab, Index ((n,_),  []) : LVAL, pos : Pos ) =
-        raise Error("variable "^"n"^" with empty index, at ", pos)
+        raise Error("variable "^n^" with empty index, at ", pos)
 
     | compileLVal( vtab : VTab, Index ((n,t),inds) : LVAL, pos : Pos ) =
         ( case SymTab.lookup n vtab of
-            SOME m => let val mem = ([], Mem m)
-                          val rank  = case t of
+            SOME m => let val mem  = ([], Mem m)
+                          (* Redundant: Already checked in Type checking *)
+                          val rank = case t of
                                         Array(r, btp) => r
                                       | tp => raise Error("Not an array, at ", pos)
                           (*
