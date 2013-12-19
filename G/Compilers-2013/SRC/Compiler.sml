@@ -447,21 +447,21 @@ struct
                           (* Redundant: Already checked in Type checking *)
                           val rank = case t of
                                         Array(r, btp) => r
-                                      | tp            => raise Error("Is not an array, at ", pos)
-                          
+                                      | tp => raise Error("Not an array, at ", pos)
+                          val code = map (fn e => ( compileExp(vtab, e, "_tmp"^newName())) ) inds
 (*
-                          fun chkBounds (i::is) d =
-                              [Mips.JAL("len",[Int.toString d, n])]
-                              @ [Mips.BNE("2", Int.toString (length is),"_IllegalArrIndexError_")]
-                              @ chkBounds is (d-1)
-                            | chkBounds _ 0 = []
+                          fun chkBounds addr d (r::rs) =
+                              [Mips.MOVE("2", addr)]
+                              @ [Mips.JAL("len",[Int.toString d, n])]
+                              @ [Mips.BNE("2", r,"_IllegalArrIndexError_")]
+                              @ chkBounds addr (d - 1) rs
+                            | chkBounds _ 0 _ = []
 *)
                       in if rank <= length inds then
-                          ( [] (* chkBounds indices rank *)
+                          ( hd code (* chkBounds indices rank *)
                           , Mem(m))
                          else
                           raise Error ("Indices inconsistent with array rank, at ", pos)
-(*                        raise Error( "indexed variables UNIMPLEMENTED, at ", pos) *)
                       end
           | NONE   => raise Error ("unknown variable "^n, pos)
         )
