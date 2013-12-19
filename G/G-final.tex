@@ -168,14 +168,45 @@ fun evalNot (BVal (Log bv), pos) = BVal (Log ( not bv ))
                                                  "Arg: " ^ pp_val v ^ "\n", pos)
 \end{lstlisting}
 
+Lastly in {\tt type.sml} the operators needed to be typechecked. This part could only be partially done at this point, because the rest were a part of task 3. During this time they were made to look like the already implemented operators which work similarly.
+
 \subsubsection{Tests}
 We ran the paladim programs in the DATA folder and we also created new programs to make sure that all the new functions have been implemented correctly. We are currently working on precendence problems regarding And, Or and Not, but Times and Div are fully functional.
+
+Typechecking of the new functions could not be done at this time but will be done during task 3, where the rest of the typechecking are also implemented.
  
 \subsection{Type inference- and checking}
+Task 3 involved typechecking in {\tt type.sml}. The code did not infer any types and we had to implement that. We modified the code parts in {\tt type.sml} where typechecking took place.
 
+\begin{lstlisting}
+Example of modifed code:
+    | typeCheckExp( vtab, AbSyn.Plus (e1, e2, pos), _ ) =
+        let val e1_new = typeCheckExp( vtab, e1, KnownType (BType Int) )
+            val e2_new = typeCheckExp( vtab, e2, KnownType (BType Int) )
+            val (tp1, tp2) = (typeOfExp e1_new, typeOfExp e2_new)
+        in  if  typesEqual(BType Int, tp1) andalso typesEqual(BType Int, tp2)
+            then Plus(e1_new, e2_new, pos)
+            else raise Error("in type check plus exp, one argument is not of int type "^
+                             pp_type tp1^" and "^pp_type tp2^" at ", pos)
+        end
+\end{lstlisting}
+        
+We had some problems with Equal and Less, where we tried to pass a Type but needed to pass an ExpectedType, but we resolved that by adding KnownType after typeOfExp e1\_new.
+
+\begin{lstlisting}
+First partEqual function with working type:
+    | typeCheckExp ( vtab, AbSyn.Equal(e1, e2, pos), _ ) =
+        let val e1_new = typeCheckExp(vtab, e1, UnknownType)
+            val e2_new = typeCheckExp(vtab, e2, KnownType (typeOfExp e1_new))
+            val (tp1, tp2) = (typeOfExp e1_new, typeOfExp e2_new)
+\end{lstlisting}
+
+The typechecking for funtion call "new" has also been made but is not yet tested.
 
 \subsubsection{Tests}
-{\it not applicable at this time}%
+Equal and Less have been tested eith the testprogram {\tt Logical.pal} and the testprogram {\tt exercise3.pal} and have been found to be working correctly. Times and Div are also working correctly.
+
+The function call "new" cannot be tested until task 4, so the testing will be done as part of task 4.
 
 \subsection{Code generation}
 We have not yet started on this part.
