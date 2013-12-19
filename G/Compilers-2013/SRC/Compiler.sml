@@ -447,20 +447,20 @@ struct
                                         Array(r, btp) => r
                                       | tp => raise Error("Not an array, at ", pos)
                           
-                          fun checkDatFucker (d, [], mips)    = mips
-                            | checkDatFucker (d, e::es, mips) =
+                          fun chkBound (d, [], mips)    = mips
+                            | chkBound (d, e::es, mips) =
                             let val r_loc = "_ret_" ^ newName()
                                 val e_loc = "_tmp_" ^ newName()
                                 val cexp  = compileExp ( vtab, e, e_loc )
-                                val exps  = mips @ cexp @ 
+                                val exps  = cexp @ 
                                            [ Mips.LW  (r_loc, m, makeConst (d * 4)                 )
                                            , Mips.SLT (r_loc, e_loc, r_loc                         )
                                            , Mips.BEQ (r_loc, makeConst 1, "_IllegalArrIndexError_")]
                             in
-                              checkDatFucker (d + 1, es, mips @ exps)
+                              chkBound (d + 1, es, mips @ exps)
                             end;
                       in if rank = length inds then
-                          ( checkDatFucker (0, inds, []) (* chkBounds indices rank *)
+                          ( chkBound (0, inds, []) (* chkBounds indices rank *)
                           , Mem(m))
                          else
                           raise Error ("Indices inconsistent with array rank, at ", pos)
