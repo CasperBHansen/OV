@@ -451,13 +451,14 @@ struct
                           
                           fun checkDatFucker (d, [], mips)    = mips
                             | checkDatFucker (d, e::es, mips) =
-                            let val loc  = "_tmp_" ^ newName()
-                                val cexp = compileExp ( vtab, e, loc )
-                                val exps = cexp @ 
-                                           [ Mips.LA  ("2" , n                                     )
-                                           , Mips.JAL ("len", ["2"]                                )                
-                                           , Mips.SLT ("2"  , loc, "2"                             )
-                                           , Mips.BNE ("2" , makeConst 1, "_IllegalArrIndexError_")]
+                            let val r_loc = "_ret_" ^ newName()
+                                val e_loc = "_tmp_" ^ newName()
+                                val cexp  = compileExp ( vtab, e, e_loc )
+                                val offs  = d * 4
+                                val exps  = mips @ cexp @ 
+                                           [ Mips.LW  (r_loc, m, makeConst offs                    )
+                                           , Mips.SLT (r_loc, e_loc, r_loc                         )
+                                           , Mips.BEQ (r_loc, makeConst 1, "_IllegalArrIndexError_")]
                             in
                               checkDatFucker (d + 1, es, mips @ exps)
                             end;
