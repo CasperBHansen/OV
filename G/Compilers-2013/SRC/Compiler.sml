@@ -447,7 +447,11 @@ struct
                           val rank  = case t of
                                         Array(r, btp) => r
                                       | tp => raise Error("Not an array, at ", pos)
-                          val indices = map (fn (Literal( BVal( Num index ), p)) => index) inds
+                          val indices = (map (fn el => ( case el of
+                                                                  Literal (BVal( Num i ), _) => i
+                                                              |   Literal (_, p)         => raise Error ("Not properly indexed at ", p)
+                                                              |   _                      => raise Error ("Shouldn't ever happen", (0,0)) )
+                                             ) inds )
 (*
                           fun chkBounds (i::is) d =
                               [Mips.JAL("len",[Int.toString d, n])]
