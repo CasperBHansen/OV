@@ -444,12 +444,23 @@ struct
     | compileLVal( vtab : VTab, Index ((n,t),inds) : LVAL, pos : Pos ) =
         ( case SymTab.lookup n vtab of
             SOME m => let val mem = ([], Mem m)
-                          val Array(r, btp) = basicType(t)
-                          val new_inds = map ( fn Literal(BVal(Num x), pos) => x <= r ) inds
-                          val inds_ok = foldl ( fn (a, b) => b andalso a ) true new_inds
-                      in if inds_ok then
-                            raise Error( "indexed variables UNIMPLEMENTED, at ", pos)
-                         else ([Mips.LABEL("_IllegalArrIndexError_")], Mem(m))
+                          val rank  = case t of
+                                        Array(r, btp) => r
+                                      | tp => raise Error("Not an array, at ", pos)
+                          val indices = map (fn (Literal( BVal( Num index ), p)) => index) inds
+(*
+                          fun chkBounds (i::is) d =
+                              [Mips.JAL("len",[Int.toString d, n])]
+                              @ [Mips.BNE("2", Int.toString (length is),"_IllegalArrIndexError_")]
+                              @ chkBounds is (d-1)
+                            | chkBounds _ 0 = []
+*)
+                      in if rank <= length inds then
+                          ( [] (* chkBounds indices rank *)
+                          , Mem(m))
+                         else
+                          raise Error ("Indices inconsistent with array rank, at ", pos)
+(*                        raise Error( "indexed variables UNIMPLEMENTED, at ", pos) *)
                       end
           | NONE   => raise Error ("unknown variable "^n, pos)
         )
@@ -463,7 +474,6 @@ struct
         (***     if a given index is out of bounds. If this is     ***)
         (***     the case your code needs to jump to the           ***)
         (***     label _IllegalArrIndexError_.                     ***)
-        (***     DONE!                                             ***)
         (***  3. Compute the flat index using the stored strides.  ***)
         (***     It might be easier to calculate the contribution  ***)
         (***     from the last index seperately, as the            ***)
