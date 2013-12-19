@@ -439,19 +439,16 @@ struct
           | NONE     => raise Error ("unknown variable "^n, pos) )
 
     | compileLVal( vtab : VTab, Index ((n,_),  []) : LVAL, pos : Pos ) =
-        raise Error("variable "^"n"^" with empty index, at ", pos)
+        raise Error("variable "^n^" with empty index, at ", pos)
 
     | compileLVal( vtab : VTab, Index ((n,t),inds) : LVAL, pos : Pos ) =
         ( case SymTab.lookup n vtab of
-            SOME m => let val mem = ([], Mem m)
-                          val rank  = case t of
+            SOME m => let val mem  = ([], Mem m)
+                          (* Redundant: Already checked in Type checking *)
+                          val rank = case t of
                                         Array(r, btp) => r
-                                      | tp => raise Error("Not an array, at ", pos)
-                          val indices = (map (fn el => ( case el of
-                                                                  Literal (BVal( Num i ), _) => i
-                                                              |   Literal (_, p)         => raise Error ("Not properly indexed at ", p)
-                                                              |   _                      => raise Error ("Shouldn't ever happen", (0,0)) )
-                                             ) inds )
+                                      | tp            => raise Error("Is not an array, at ", pos)
+                          
 (*
                           fun chkBounds (i::is) d =
                               [Mips.JAL("len",[Int.toString d, n])]
