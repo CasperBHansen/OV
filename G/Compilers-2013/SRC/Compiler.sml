@@ -444,9 +444,12 @@ struct
     | compileLVal( vtab : VTab, Index ((n,t),inds) : LVAL, pos : Pos ) =
         ( case SymTab.lookup n vtab of
             SOME m => let val mem = ([], Mem m)
-                          val Array(r, t) = basicType(t)
-                      in
-                        raise Error( "indexed variables UNIMPLEMENTED, at ", pos)
+                          val Array(r, btp) = basicType(t)
+                          val new_inds = map ( fn Literal(BVal(Num x), pos) => x <= r ) inds
+                          val inds_ok = foldl ( fn (a, b) => b andalso a ) true new_inds
+                      in if inds_ok then
+                            raise Error( "indexed variables UNIMPLEMENTED, at ", pos)
+                         else ([Mips.LABEL("_IllegalArrIndexError_")], Mem(m))
                       end
           | NONE   => raise Error ("unknown variable "^n, pos)
         )
@@ -455,10 +458,12 @@ struct
         (*** Sugested implementation STEPS:                        ***)
         (***  1. Lookup the name of the array in order to get a    ***)
         (***     pointer to the array metadata.                    ***)
+        (***     DONE!                                             ***)
         (***  2. Create a function that generates code to check    ***)
         (***     if a given index is out of bounds. If this is     ***)
         (***     the case your code needs to jump to the           ***)
         (***     label _IllegalArrIndexError_.                     ***)
+        (***     DONE!                                             ***)
         (***  3. Compute the flat index using the stored strides.  ***)
         (***     It might be easier to calculate the contribution  ***)
         (***     from the last index seperately, as the            ***)
@@ -473,7 +478,6 @@ struct
         (***     Bonus question: can you implement it without      ***)
         (***                        using the stored strides?      ***)
         (*************************************************************)
-        (* raise Error( "indexed variables UNIMPLEMENTED, at ", pos) *)
 
 
   (* instr.s for one statement. exitLabel is end (for control flow jumps) *)
