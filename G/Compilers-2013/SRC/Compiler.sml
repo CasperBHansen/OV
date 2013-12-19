@@ -443,23 +443,26 @@ struct
 
     | compileLVal( vtab : VTab, Index ((n,t),inds) : LVAL, pos : Pos ) =
         ( case SymTab.lookup n vtab of
-            SOME m => let val mem  = ([], Mem m)
+            SOME m => let val mem  = Mem m
                           (* Redundant: Already checked in Type checking *)
                           val rank = case t of
                                         Array(r, btp) => r
                                       | tp => raise Error("Not an array, at ", pos)
-                          (*
-                          val (code, _) = map (fn e => ( compileExp(vtab, e, "_tmp"^newName())) ) inds
-(**)
-                          fun chkBounds addr d (r::rs) =
-                              [Mips.MOVE("2", addr)]
-                              @ [Mips.JAL("len",[Int.toString d, n])]
-                              @ [Mips.BNE("2", r,"_IllegalArrIndexError_")]
-                              @ chkBounds addr (d - 1) rs
-                            | chkBounds _ 0 _ = []
-*)
+                          
+                          fun checkDatFucker (d, [], mips)    = mips
+                            | checkDatFucker (d, e::es, mips) =
+                            let val loc  = "_tmp_" ^ newName()
+                                val cexp = compileExp ( vtab, e, loc )
+                                val exps = cexp @ 
+                                           [ Mips.LA  ("2" , n                                     )
+                                           , Mips.JAL ("len", ["2"])                
+                                           , Mips.SLT ("2"  , loc, "2"                             )
+                                           , Mips.BNE ("2" , makeConst 1, "_IllegalArrIndexError_")]
+                            in
+                              checkDatFucker (d + 1, es, mips @ exps)
+                            end;
                       in if rank <= length inds then
-                          ( [] (* chkBounds indices rank *)
+                          ( checkDatFucker (0, inds, []) (* chkBounds indices rank *)
                           , Mem(m))
                          else
                           raise Error ("Indices inconsistent with array rank, at ", pos)

@@ -24,7 +24,7 @@ begin
     write("a: [");
     while i < n do
     begin
-      write(a[0]);
+      write(a[i]);
       i := i + 1;
       if not(i = n) then
         write(','); 
