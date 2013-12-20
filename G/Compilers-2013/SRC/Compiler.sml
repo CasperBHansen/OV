@@ -444,99 +444,47 @@ struct
     | compileLVal( vtab : VTab, Index ((n,t),inds) : LVAL, pos : Pos ) =
         ( case SymTab.lookup n vtab of
             SOME m => let 
-                          val r_loc = "_loc_" ^ newName()
-                          val rank = case t of
-                                        Array(r, btp) => r
-                                      | tp => raise Error("Not an array, at ", pos)
-                          
-                          fun chkBound (d, [], mips)    = mips
-                            | chkBound (d, e::es, mips) =
-                            let val r_loc = "_ret_" ^ newName()
-                                val e_loc = "_tmp_" ^ newName()
-                                val cexp  = compileExp ( vtab, e, e_loc )
-                                val exps  = cexp @ 
-                                           [ Mips.LW  (r_loc, m, makeConst (d * 4)                 )
-                                           , Mips.SLT (r_loc, e_loc, r_loc                         )
-                                           , Mips.BEQ (r_loc, makeConst 1, "_IllegalArrIndexError_")]
-                            in
-                              chkBound (d + 1, es, mips @ exps)
-                            end;
-(*
-                          local (* static values *)
-                            val s_loc   = "_loc_" ^ newName()
-                            val e_loc   = "_loc_" ^ newName()
-                          in
+                          val r_loc = "_ret_" ^ newName()
+                          val e_loc = "_tmp_" ^ newName()
 
-                            fun flatIdx (_, true, e::es   , acc) =
-                                let val cexp = compileExp (vtab, e, e_loc)
-                                in      (acc @ [Mips.ADD(s_loc, s_loc, e_loc)])
-                                end
-                              | flatIdx (0, _   , e::es, acc) =  (* First time round *)
-                                let val cexp   = compileExp (vtab, e, e_loc)
-                                in
-                                  flatIdx(1, rank = 1, es, [ Mips.LW   (s_loc, m, makeConst (rank * 4))
-                                                           , Mips.MOVE (r_loc, "0")
-                                                           , Mips.ADD  (s_loc, s_loc, e_loc)
-                                                           , Mips.MUL  (r_loc, s_loc, e_loc)])
-                                end
-                              | flatIdx (count, _, e::es, acc) = (* Else *)
-                                let (* Dynamically updated values *)
-                                    val cexp    = compileExp (vtab, e, e_loc)
-                                    val load_s  = [Mips.LW  (s_loc, m, makeConst (rank * 4 * count))];
-                                    val add_r   = [Mips.ADD (r_loc, r_loc, e_loc)];
-                                    val times_e = [Mips.MUL (e_loc, s_loc, e_loc)];
-                                    val next    = count + 1
-                                in
-                                  flatIdx(next, count = rank, es, (acc @ load_s @ times_e @ add_r))
-                                end
-                          end;
-                          *)
+                          val rank = case t of
+                                Array(r, btp) => r
+                              | _             => raise Error("Not an array, at ", pos)
+                          
+                          fun chkBounds (_, []) = []
+                            | chkBounds (d, e::es) =
+                            let val exps = compileExp ( vtab, e, e_loc ) @ 
+                                         [ Mips.LW  (r_loc, m, makeConst (d * 4)                 )
+                                         , Mips.SLT (r_loc, e_loc, r_loc                         )
+                                         , Mips.BEQ (r_loc, makeConst 0, "_IllegalArrIndexError_")]
+                            in
+                              exps @ chkBounds (d + 1, es)
+                            end;
 
                           local
-                            val s_loc = "_loc_" ^ newName()
-                            val e_loc = "_loc_" ^ newName()
-                            val a_loc = "_loc_" ^ newName()
+                            val s_loc = "_tmp_" ^ newName()
                           in
-                            fun flatIdx(e::[], count, acc) = 
-                                let val cexp = compileExp(vtab, e, e_loc)
-                                in [ Mips.LA(a_loc, m)
-                                  , Mips.ADD(r_loc, r_loc, a_loc)]
-                                  @ cexp
-                                  @ [Mips.ADD(r_loc, r_loc, e_loc)] @ acc
-                                end
-                              | flatIdx(e::es, count, acc) =
-                                let val cexp = compileExp(vtab, e, e_loc)
-                                    val offs = makeConst ((rank * 4) (* past dims *) + (count * 4))
-                                in
-                                  flatIdx(es, count + 1, acc @
-                                                       [ Mips.LW  (s_loc, m, offs)
-                                                       , Mips.MUL (e_loc, e_loc, s_loc)
-                                                       , Mips.ADD (r_loc, r_loc, e_loc)
-                                                       ])
-                                end
-                              | flatIdx(_,_,_) = raise Error ("This is a veeweeery dangerous place. You done fuck-up!", pos);
-                        end(*
-                          fun strides (acc, e::[], _  ) = 
-                            let val e_loc = "_loc_" ^ newName()
-                            in      acc @ [Mips.ADD (r_loc, r_loc, e_loc)] end
-                            | strides (acc, e::es, cnt) =
-                            let val s_loc   = "_loc_" ^ newName()
-                                val e_loc   = "_loc_" ^ newName()
-                                val cexp    = compileExp ( vtab, e, e_loc )
-                                val load_s  = [Mips.LW  (s_loc, m, makeConst (rank * 4 * cnt))]
-                                val add_r   = [Mips.ADD (r_loc, r_loc, e_loc)]
-                                val times_e = [Mips.MUL (e_loc, s_loc, e_loc)]
-                                val next    = cnt + 1
-                            in
-                              if   cnt = 0
-                              then (Mips.LA (r_loc, m) :: strides( acc @ load_s @ times_e @ add_r, es, next))
-                              else if   cnt = rank
-                                   then (acc @ add_r)
-                                   else strides((acc @ load_s @ times_e @ add_r), es, next)
-                            end
-                            | strides (_, _, _) = raise Error ("not POSSIBLE", pos)*)
+                            fun flattenIndex (e::[], _) = [Mips.MOVE (r_loc, m)]
+                                                        @ compileExp(vtab, e, e_loc)
+                                                        @ [Mips.ADD (r_loc, r_loc, e_loc)]
+                              | flattenIndex (e::es, c) =
+                              let
+                                val next = c + 1
+                                val bytes = 4
+                                val offset = bytes * (rank + c)
+                              in
+                                flattenIndex(es, next)
+                                @ [Mips.LW (s_loc, m, makeConst offset),
+                                   Mips.MUL(e_loc, e_loc, s_loc),
+                                   Mips.ADD(r_loc, r_loc, e_loc)]
+                              end
+                              | flattenIndex _ = raise Error ("You should never go here, Simba.", pos)
+                          end
+
                       in if rank = length inds then
-                          ( chkBound (0, inds, []) @ flatIdx (inds, 0, [])(* chkBounds indices rank *)
+                          (
+                            chkBounds (0, inds)
+                          @ flattenIndex (inds, 0)
                           , Reg r_loc)
                          else
                           raise Error ("Indices inconsistent with array rank, at ", pos)
@@ -553,12 +501,13 @@ struct
         (***     if a given index is out of bounds. If this is     ***)
         (***     the case your code needs to jump to the           ***)
         (***     label _IllegalArrIndexError_.                     ***)
-        (***     DONE! (MAYBE :P )                                 ***)
+        (***     DONE!                                             ***)
         (***  3. Compute the flat index using the stored strides.  ***)
         (***     It might be easier to calculate the contribution  ***)
         (***     from the last index seperately, as the            ***)
         (***     corresponding stride is always 1 and              ***)
         (***     isn't stored in the metadata.                     ***)
+        (***     DONE!                                             ***)
         (***  4. Find the address of the element in memory by      ***)
         (***     combining the flat index, the basic element type  ***)
         (***     and the pointer to the array.                     ***)

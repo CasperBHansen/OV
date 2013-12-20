@@ -303,11 +303,12 @@ and callFun ( (rtp : Type option, fid : string, fargs : Dec list, body : StmtBlo
             let val new_vtab = bindTypeIds(fargs, aargs, fid, pdcl, pcall)
                 val res  = execBlock( body, new_vtab, ftab )
             in  ( case (rtp, res) of
-                    (NONE  , _     ) =>
+                    (NONE  , _     ) => (* Procedure, hence modify this code for TASK 5. *) 
                     (
                       (* Should somehow use aexps *)
+
                       
-                    )  (* Procedure, hence modify this code for TASK 5. *) 
+                    )  
                   | (SOME t, SOME r) => if   typesEqual(t, typeOfVal r) 
                                         then SOME r
                                         else raise Error("in call fun: result does " ^
@@ -324,11 +325,11 @@ and callFun ( (rtp : Type option, fid : string, fargs : Dec list, body : StmtBlo
  * '2 + x' do not work, since '2 * x' is not an LValue variable name.
  *)
 and updateOuterVtable vtabOuter vtabInner (LValue out_exp, in_arg) =
-    let val (oexp, opos) = out_exp;
+    let val (oexp, opos) = out_exp; (* Already ensured to be an LValue *)
         val varToBind    = in_arg (* Somehow determine that it is a terminal *)
     in
       (case SymTab.lookup in_arg vtabOuter of
-           SOME loc = (* Code to update *)
+           SOME loc = (* Code to update *) loc (* avoid errors *)
                       
          | NONE     => Error ("inner argument not present in caller, at ", opos))
     end
