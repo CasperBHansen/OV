@@ -8,34 +8,24 @@ var n : int;
     a : array of int;
 begin
     // check that input is valid
-    n := 8;
+    n := 4;
     if n < 1 then return;
 
     // fill array
     a := new(n);
     k := len(0,a);
-    write (k);
-    write ('\n');
     i := 0;
-    while i < n do
+    while i < k do
     begin
-      write (i);
-      write ('\n');
       a[i] := i;
       i := i + 1;
     end;
 
     j := 0;
-    write (j);
-    write ('\n');
-    write("a: [");
-    while j < n do
+    while j < k do
     begin
       write(a[j]);
       j := j + 1;
-      if not(j = n) then write(','); 
     end;
-    write(']');
-    write('\n');
 
 end; // main
