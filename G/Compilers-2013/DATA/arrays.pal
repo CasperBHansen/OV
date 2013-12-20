@@ -5,27 +5,27 @@ var n : int;
     i : int;
     j : int;
     k : int;
-    a : array of int;
+    a : array of array of int;
 begin
     // check that input is valid
     n := 4;
     if n < 1 then return;
 
     // fill array
-    a := new(n);
-    k := len(0,a);
-    i := 0;
-    while i < k do
-    begin
-      a[i] := i;
-      i := i + 1;
-    end;
+    a := new(2,3);
 
+    i := 0;
     j := 0;
-    while j < k do
+
+    while i < 2 do
     begin
-      write(a[j]);
-      j := j + 1;
+      while j < 3 do
+      begin
+        a[i,j] := i * j;
+        write( a[i,j] );
+        j := j + 1;
+      end;
+      i := i + 1;
     end;
 
 end; // main

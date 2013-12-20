@@ -444,31 +444,29 @@ struct
     | compileLVal( vtab : VTab, Index ((n,t),inds) : LVAL, pos : Pos ) =
         ( case SymTab.lookup n vtab of
             SOME m => let 
-                          val ret_loc = "_loc_" ^ newName()
+                          val r_loc = "_ret_" ^ newName()
+                          val e_loc = "_tmp_" ^ newName()
+
                           val rank = case t of
                                 Array(r, btp) => r
                               | _             => raise Error("Not an array, at ", pos)
                           
-                          fun chkBounds (d, [], mips)    = mips
-                            | chkBounds (d, e::es, mips) =
-                            let val r_loc = "_ret_" ^ newName()
-                                val e_loc = "_tmp_" ^ newName()
-                                val cexp  = compileExp ( vtab, e, e_loc )
-                                val exps  = cexp @ 
-                                           [ Mips.LW  (r_loc, m, makeConst (d * 4)                 )
-                                           , Mips.SLT (r_loc, e_loc, r_loc                         )
-                                           , Mips.BEQ (r_loc, makeConst 1, "_IllegalArrIndexError_")]
+                          fun chkBounds (_, []) = []
+                            | chkBounds (d, e::es) =
+                            let val exps = compileExp ( vtab, e, e_loc ) @ 
+                                         [ Mips.LW  (r_loc, m, makeConst (d * 4)                 )
+                                         , Mips.SLT (r_loc, e_loc, r_loc                         )
+                                         , Mips.BEQ (r_loc, makeConst 0, "_IllegalArrIndexError_")]
                             in
-                              chkBounds (d + 1, es, mips @ exps)
+                              exps @ chkBounds (d + 1, es)
                             end;
 
                           local
                             val s_loc = "_tmp_" ^ newName()
-                            val e_loc = "_tmp_" ^ newName()
                           in
-                            fun flattenIndex (e::[], _) = [Mips.MOVE (ret_loc, m)]
+                            fun flattenIndex (e::[], _) = [Mips.MOVE (r_loc, m)]
                                                         @ compileExp(vtab, e, e_loc)
-                                                        @ [Mips.ADD (ret_loc, ret_loc, e_loc)]
+                                                        @ [Mips.ADD (r_loc, r_loc, e_loc)]
                               | flattenIndex (e::es, c) =
                               let
                                 val next = c + 1
@@ -478,16 +476,16 @@ struct
                                 flattenIndex(es, next)
                                 @ [Mips.LW (s_loc, m, makeConst offset),
                                    Mips.MUL(e_loc, e_loc, s_loc),
-                                   Mips.ADD(ret_loc, ret_loc, e_loc)]
+                                   Mips.ADD(r_loc, r_loc, e_loc)]
                               end
                               | flattenIndex _ = raise Error ("You should never go here, Simba.", pos)
                           end
 
                       in if rank = length inds then
                           (
-                            chkBounds (0, inds, [])
+                            chkBounds (0, inds)
                           @ flattenIndex (inds, 0)
-                          , Reg ret_loc)
+                          , Reg r_loc)
                          else
                           raise Error ("Indices inconsistent with array rank, at ", pos)
                       end
