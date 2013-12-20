@@ -250,7 +250,6 @@ struct
 
     (* Task 2: Some code-generation of operators should occur here. *)
     (* DONE *)
-    (* Uncommented and started implementing *)
     | compileExp( vtable, Or(e1, e2, pos), place ) =
         let val t1 = "or1_" ^ newName()
             val c1 = compileExp(vtable, e1, t1)
