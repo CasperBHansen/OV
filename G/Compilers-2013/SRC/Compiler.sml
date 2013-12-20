@@ -443,7 +443,9 @@ struct
 
     | compileLVal( vtab : VTab, Index ((n,t),inds) : LVAL, pos : Pos ) =
         ( case SymTab.lookup n vtab of
-            SOME m => let val rank = case t of
+            SOME m => let 
+                          val r_loc = "_loc_" ^ newName()
+                          val rank = case t of
                                         Array(r, btp) => r
                                       | tp => raise Error("Not an array, at ", pos)
                           
@@ -459,29 +461,83 @@ struct
                             in
                               chkBound (d + 1, es, mips @ exps)
                             end;
+(*
+                          local (* static values *)
+                            val s_loc   = "_loc_" ^ newName()
+                            val e_loc   = "_loc_" ^ newName()
+                          in
 
-                          (*fun flatIdx (count, *)
+                            fun flatIdx (_, true, e::es   , acc) =
+                                let val cexp = compileExp (vtab, e, e_loc)
+                                in      (acc @ [Mips.ADD(s_loc, s_loc, e_loc)])
+                                end
+                              | flatIdx (0, _   , e::es, acc) =  (* First time round *)
+                                let val cexp   = compileExp (vtab, e, e_loc)
+                                in
+                                  flatIdx(1, rank = 1, es, [ Mips.LW   (s_loc, m, makeConst (rank * 4))
+                                                           , Mips.MOVE (r_loc, "0")
+                                                           , Mips.ADD  (s_loc, s_loc, e_loc)
+                                                           , Mips.MUL  (r_loc, s_loc, e_loc)])
+                                end
+                              | flatIdx (count, _, e::es, acc) = (* Else *)
+                                let (* Dynamically updated values *)
+                                    val cexp    = compileExp (vtab, e, e_loc)
+                                    val load_s  = [Mips.LW  (s_loc, m, makeConst (rank * 4 * count))];
+                                    val add_r   = [Mips.ADD (r_loc, r_loc, e_loc)];
+                                    val times_e = [Mips.MUL (e_loc, s_loc, e_loc)];
+                                    val next    = count + 1
+                                in
+                                  flatIdx(next, count = rank, es, (acc @ load_s @ times_e @ add_r))
+                                end
+                          end;
+                          *)
 
-                          fun strides (acc, cnt) =
+                          local
+                            val s_loc = "_loc_" ^ newName()
+                            val e_loc = "_loc_" ^ newName()
+                            val a_loc = "_loc_" ^ newName()
+                          in
+                            fun flatIdx(e::[], count, acc) = 
+                                let val cexp = compileExp(vtab, e, e_loc)
+                                in [ Mips.LA(a_loc, m)
+                                  , Mips.ADD(r_loc, r_loc, a_loc)]
+                                  @ cexp
+                                  @ [Mips.ADD(r_loc, r_loc, e_loc)] @ acc
+                                end
+                              | flatIdx(e::es, count, acc) =
+                                let val cexp = compileExp(vtab, e, e_loc)
+                                    val offs = makeConst ((rank * 4) (* past dims *) + (count * 4))
+                                in
+                                  flatIdx(es, count + 1, acc @
+                                                       [ Mips.LW  (s_loc, m, offs)
+                                                       , Mips.MUL (e_loc, e_loc, s_loc)
+                                                       , Mips.ADD (r_loc, r_loc, e_loc)
+                                                       ])
+                                end
+                              | flatIdx(_,_,_) = raise Error ("This is a veeweeery dangerous place. You done fuck-up!", pos)
+                      end(*
+                          fun strides (acc, e::[], _  ) = 
+                            let val e_loc = "_loc_" ^ newName()
+                            in      acc @ [Mips.ADD (r_loc, r_loc, e_loc)] end
+                            | strides (acc, e::es, cnt) =
                             let val s_loc   = "_loc_" ^ newName()
                                 val e_loc   = "_loc_" ^ newName()
-                                val r_loc   = "_loc_" ^ newName()
                                 val cexp    = compileExp ( vtab, e, e_loc )
-                                val load_s  = Mips.LW   (s_loc, m, makeConst (rank * 4 * cnt))
-                                val add_r   = Mips.ADD  (r_loc, r_loc, e_loc)
-                                val times_e = Mips.TIMES(e_loc, s_lock, e_loc)
+                                val load_s  = [Mips.LW  (s_loc, m, makeConst (rank * 4 * cnt))]
+                                val add_r   = [Mips.ADD (r_loc, r_loc, e_loc)]
+                                val times_e = [Mips.MUL (e_loc, s_loc, e_loc)]
                                 val next    = cnt + 1
                             in
                               if   cnt = 0
-                              then Mips.MOVE (r_loc, "0") :: (curr_s @ strides (acc, next))
+                              then (Mips.LA (r_loc, m) :: strides( acc @ load_s @ times_e @ add_r, es, next))
                               else if   cnt = rank
                                    then (acc @ add_r)
-                                   else (acc @ load_s @ times_e @ add_r)
-                            end;
-
+                                   else strides((acc @ load_s @ times_e @ add_r), es, next)
+                            end
+                            | strides (_, _, _) = raise Error ("not POSSIBLE", pos)*)
                       in if rank = length inds then
-                          ( chkBound (0, inds, []) (* chkBounds indices rank *)
-                          , Mem(m))
+                          ( chkBound (0, inds, []) @ flatIdx (inds, 0, [])(* chkBounds indices rank *)
+                          , Reg r_loc)
                          else
                           raise Error ("Indices inconsistent with array rank, at ", pos)
                       end
