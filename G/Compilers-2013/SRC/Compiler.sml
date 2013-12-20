@@ -443,26 +443,44 @@ struct
 
     | compileLVal( vtab : VTab, Index ((n,t),inds) : LVAL, pos : Pos ) =
         ( case SymTab.lookup n vtab of
-            SOME m => let val mem  = Mem m
-                          (* Redundant: Already checked in Type checking *)
-                          val rank = case t of
+            SOME m => let val rank = case t of
                                         Array(r, btp) => r
                                       | tp => raise Error("Not an array, at ", pos)
                           
-                          fun checkDatFucker (d, [], mips)    = mips
-                            | checkDatFucker (d, e::es, mips) =
-                            let val loc  = "_tmp_" ^ newName()
-                                val cexp = compileExp ( vtab, e, loc )
-                                val exps = cexp @ 
-                                           [ Mips.LA  ("2" , n                                     )
-                                           , Mips.JAL ("len", ["2"]                                )                
-                                           , Mips.SLT ("2"  , loc, "2"                             )
-                                           , Mips.BNE ("2" , makeConst 1, "_IllegalArrIndexError_")]
+                          fun chkBound (d, [], mips)    = mips
+                            | chkBound (d, e::es, mips) =
+                            let val r_loc = "_ret_" ^ newName()
+                                val e_loc = "_tmp_" ^ newName()
+                                val cexp  = compileExp ( vtab, e, e_loc )
+                                val exps  = cexp @ 
+                                           [ Mips.LW  (r_loc, m, makeConst (d * 4)                 )
+                                           , Mips.SLT (r_loc, e_loc, r_loc                         )
+                                           , Mips.BEQ (r_loc, makeConst 1, "_IllegalArrIndexError_")]
                             in
-                              checkDatFucker (d + 1, es, mips @ exps)
+                              chkBound (d + 1, es, mips @ exps)
                             end;
-                      in if rank <= length inds then
-                          ( checkDatFucker (0, inds, []) (* chkBounds indices rank *)
+
+                          (*fun flatIdx (count, *)
+
+                          fun strides (acc, cnt) =
+                            let val s_loc   = "_loc_" ^ newName()
+                                val e_loc   = "_loc_" ^ newName()
+                                val r_loc   = "_loc_" ^ newName()
+                                val cexp    = compileExp ( vtab, e, e_loc )
+                                val load_s  = Mips.LW   (s_loc, m, makeConst (rank * 4 * cnt))
+                                val add_r   = Mips.ADD  (r_loc, r_loc, e_loc)
+                                val times_e = Mips.TIMES(e_loc, s_lock, e_loc)
+                                val next    = cnt + 1
+                            in
+                              if   cnt = 0
+                              then Mips.MOVE (r_loc, "0") :: (curr_s @ strides (acc, next))
+                              else if   cnt = rank
+                                   then (acc @ add_r)
+                                   else (acc @ load_s @ times_e @ add_r)
+                            end;
+
+                      in if rank = length inds then
+                          ( chkBound (0, inds, []) (* chkBounds indices rank *)
                           , Mem(m))
                          else
                           raise Error ("Indices inconsistent with array rank, at ", pos)
@@ -479,6 +497,7 @@ struct
         (***     if a given index is out of bounds. If this is     ***)
         (***     the case your code needs to jump to the           ***)
         (***     label _IllegalArrIndexError_.                     ***)
+        (***     DONE! (MAYBE :P )                                 ***)
         (***  3. Compute the flat index using the stored strides.  ***)
         (***     It might be easier to calculate the contribution  ***)
         (***     from the last index seperately, as the            ***)

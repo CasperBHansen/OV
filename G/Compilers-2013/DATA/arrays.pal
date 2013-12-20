@@ -13,21 +13,27 @@ begin
 
     // fill array
     a := new(n);
+    k := len(0,a);
+    write (k);
+    write ('\n');
     i := 0;
     while i < n do
     begin
+      write (i);
+      write ('\n');
       a[i] := i;
       i := i + 1;
     end;
 
-    i := 0;
+    j := 0;
+    write (j);
+    write ('\n');
     write("a: [");
-    while i < n do
+    while j < n do
     begin
-      write(a[i]);
-      i := i + 1;
-      if not(i = n) then
-        write(','); 
+      write(a[j]);
+      j := j + 1;
+      if not(j = n) then write(','); 
     end;
     write(']');
     write('\n');
