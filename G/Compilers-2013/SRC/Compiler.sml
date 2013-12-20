@@ -460,13 +460,23 @@ struct
                               chkBound (d + 1, es, mips @ exps)
                             end;
 
-                          fun flatIdx (acc, cnt) =
-                            let val loc_arr = 
-                                val s_loc   = "_loc_" ^ newName()
-                                val curr_s  = [Mips.LW (s_loc, m, makeConst (rank * 4 * cnt))]
+                          (*fun flatIdx (count, *)
+
+                          fun strides (acc, cnt) =
+                            let val s_loc   = "_loc_" ^ newName()
+                                val e_loc   = "_loc_" ^ newName()
+                                val r_loc   = "_loc_" ^ newName()
+                                val cexp    = compileExp ( vtab, e, e_loc )
+                                val load_s  = Mips.LW   (s_loc, m, makeConst (rank * 4 * cnt))
+                                val add_r   = Mips.ADD  (r_loc, r_loc, e_loc)
+                                val times_e = Mips.TIMES(e_loc, s_lock, e_loc)
                                 val next    = cnt + 1
                             in
-                              if next = rank then flatIdx( acc @ curr_s, next ) else (acc @ curr_s)
+                              if   cnt = 0
+                              then Mips.MOVE (r_loc, "0") :: (curr_s @ strides (acc, next))
+                              else if   cnt = rank
+                                   then (acc @ add_r)
+                                   else (acc @ load_s @ times_e @ add_r)
                             end;
 
                       in if rank = length inds then
