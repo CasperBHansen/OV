@@ -1,8 +1,7 @@
 program Arrays;
    
 procedure main()
-var n : int;
-    i : int;
+var i : int;
     j : int;
     k : int;
     a : array of array of int;
@@ -24,8 +23,10 @@ begin
         a[i,j] := i * j;
         write( a[i,j] );
         j := j + 1;
+        if j < 3 then write(',');
       end;
       i := i + 1;
+      if i < 2 then write(',');
     end;
 
 end; // main
