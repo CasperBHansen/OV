@@ -32,7 +32,9 @@
 \thispagestyle{empty}
 \begin{multicols}{2}
 \begin{abstract}
-This document describes the development of the Paladim programming language, which is a pascal-like imperative language with functions and procedures, which uses multidimensional regular arrays.
+This document describes the development of the Paladim programming language,
+which is a pascal-like imperative language with functions and procedures, which
+uses multidimensional regular arrays.
 
 Each subtask will be addressed in its own subsection of the document.
 \end{abstract}
@@ -207,6 +209,15 @@ Task 5 is about replacing call-by-value with call-by-value-result. To do this, w
 To do this we first had to brush up our understanding of call-by-value-result. We had our understading from the lectures but were still not sure about how to implement it in our compiler.
 
 We started by modifying our callFun function and implementing the function {\tt updateOuterVtable}. We were trying to do a bit much in that function but was able to keep it simple in the end. One of the problems was to call the function on multiple variables, but that was accomplished with a map function.
+
+In an attempt to solve the Code Generator-part of Task 5, we tried to update our compiler to:
+\begin{enumerate}[i]
+    \item Utilise the ``general-purpose'' {\tt compileStmt}-case for {\tt
+        ProcCall}, to include a {\tt movebackcode} value, retrieving (ii) and
+        setting (iii) the updated (or perhaps rather {\it all}) values in vtab.
+    \item 
+\end{enumerate}
+        
 
 \subsubsection*{Tests}
 Task 5 has not been completed yet, so we cannot test it properly 
