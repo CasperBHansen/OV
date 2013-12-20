@@ -1,6 +1,6 @@
 build:
-	pdflatex -shell-escape milestone.tex
+	pdflatex -shell-escape G-final.tex
 
 clean:
-	rm -f milestone.{aux,log,toc,out}
+	rm -f G-final.{aux,log,toc,out}
 

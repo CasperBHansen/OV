@@ -213,7 +213,7 @@ fun execPgm funlst =
 (**************************************************)
 (******* Executing Function/Procedure Calls *******)
 (*** Input:                                     ***)
-(***   1. the function declaration as a tiple of***)
+(***   1. the function declaration as a tiple of***) (* Iiiiii don't think so - perhaps a tuple?? *)
 (***      the return type (rtp), fun/proc name  ***)
 (***      (fid), formal-argument declarations   ***)
 (***      (farg), fun/proc body (body), position***)
@@ -233,7 +233,7 @@ fun execPgm funlst =
 (**************************************************)
 
 and callFun ( (rtp : Type option, fid : string, fargs : Dec list, body : StmtBlock, pdcl : Pos),
-              aargs : Value list, aexps : Exp list, vtab, ftab, pcall : Pos
+              aargs : Value list, aexps : Exp list, vtab : (string * Value ref) list, ftab, pcall : Pos
             ) : Value option =
     let val () = () (* print ("\nCalling function: "^fid^"\n") *)
     in  case fid of
@@ -299,13 +299,16 @@ and callFun ( (rtp : Type option, fid : string, fargs : Dec list, body : StmtBlo
           (***            i.e., actual arg. expressions, which is a VARIABLE, do:      ***)
           (***               2.1 get its final value in callee from `new_vtab' and     ***)
           (***               2.2 update the corresponding entry in `vtab'              ***)
+          (***                             DONE!                                       ***)
           (*******************************************************************************)
             let val new_vtab = bindTypeIds(fargs, aargs, fid, pdcl, pcall)
                 val res  = execBlock( body, new_vtab, ftab )
             in  ( case (rtp, res) of
-                    (NONE  , _     ) => NONE (* Procedure, hence modify this code for TASK 5. *) 
-
-                  | (SOME t, SOME r) => if   typesEqual(t, typeOfVal r) 
+                    (NONE  , _     ) => 
+                      let val _ = ListPair.map (fn (aexp,Dec((farg,_),_)) => updateOuterVtable vtab new_vtab (aexp, farg)) 
+                                               (aexps, fargs)
+                      in NONE end
+                  | (SOME t, SOME r) => if   typesEqual(t, typeOfVal r)
                                         then SOME r
                                         else raise Error("in call fun: result does " ^
                                                          "not match the return type! In fun/proc:" ^ fid ^ 
@@ -318,10 +321,16 @@ and callFun ( (rtp : Type option, fid : string, fargs : Dec list, body : StmtBlo
  * expression in a call, e.g. x in f(x), and in_arg is the local argument name
  * in f, e.g. m when 'procedure f(m) ... end' is defined.  Remember that call by value
  * result requires that argument expressions are variable names, i.e. expressions like
- * '2 + x' do not work, since '2 * x' is not an LValue variable name.
- *)
-and updateOuterVtable vtabOuter vtabInner (out_exp, in_arg) = ()
-(* Implement this function to complete TASK 5 in the interpreter. *)
+ * '2 + x' do not work, since '2 * x' is not an LValue variable name. *)
+ (* DONE JOHN! *)
+and updateOuterVtable vtabOuter vtabInner (LValue (Var (out_arg,_), out_pos), in_arg) =
+      (case SymTab.lookup in_arg vtabInner of
+           SOME inner_loc => (
+                        case SymTab.lookup out_arg vtabOuter of
+                             SOME outer_loc => outer_loc := !inner_loc
+                           | NONE   => () )
+         | NONE     => raise Error ("Argument mismatch at, ", out_pos)) 
+  | updateOuterVtable vtabOuter vtabInner _ = ()
 
 
 and mkNewArr( btp : BasicType, shpval : Value list, pos : Pos ) : Value =
