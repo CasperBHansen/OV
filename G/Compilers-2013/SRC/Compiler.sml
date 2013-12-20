@@ -423,11 +423,13 @@ struct
           val code1 = compileExp(vtable, e, t1)
           val (code2, maxreg) = putArgs es vtable (reg + 1)
       in
-          (   code1                          (* compute arg1 *)
-            @ code2                          (* compute rest *)
-            @ [Mips.MOVE (makeConst reg,t1)] (* store in reg *)
+          (   code1                           (* compute arg1 *)
+            @ code2                           (* compute rest *)
+            @ [Mips.MOVE (makeConst reg, t1)] (* store in reg *)
             , maxreg)
       end
+
+(*  attempted, but didn't find a way to refer back to the original register
 
     and resArgs [] vtable reg = ([], reg)
       | resArgs (e::es) vtable reg =
@@ -435,12 +437,16 @@ struct
         val t1 = "_funarg_"^newName()
         val code1 = compileExp(vtable, e, t1)
         val (code2, minreg) = resArgs es vtable (reg - 1)
-      in
-        (   code1
-          @ code2
-          @ [Mips.MOVE (makeConst reg, t1)]
-          , minreg)
+
+        val sym = case e of 
+            LValue( Var(id), _)      => SOME id
+          | LValue( Index(id, _), _) => SOME id
+          | _                        => NONE
+      
+      in if not(Option.isSome sym) then (code2, minreg)
+         else (code1 @ code2 @ [Mips.MOVE (t1, makeConst reg)], minreg)
       end
+ *)
 
 (** TASK 5: You may want to create a function slightly similar to putArgs,
  *  but instead moving args back to registers. **)
@@ -506,7 +512,6 @@ struct
                           end
 
                           val allcode = chkBounds (0, inds) @ flattenIndex(inds, 0, bytes, [])
-                          val () = print (Mips.pp_mips_list allcode)
 
                       in (allcode, Mem r_loc)
                       end
@@ -594,14 +599,15 @@ struct
         (** TASK 5: Extend this to handle the extra needs of procedures.  Procedures
          * must also have code to put variables back into the registers used to call
          * the procedure. **)
-        | ProcCall ((n,_), es, p) => 
+        | ProcCall ((n,_), es, p) =>
           let
-              val (mvcode, maxreg) = putArgs es vtable minReg
-              val mvbackcode       = resArgs es vtable maxReg
+              val (mvcode, maxreg)     = putArgs es vtable minReg
+          (*  val (mvbackcode, minreg) = resArgs es vtable maxReg *)
+              val procCall             = [Mips.JAL (n, List.tabulate (maxreg, fn reg => makeConst reg))]
+              val code                 = mvcode @ procCall (* @ mvbackcode *)
+          (*  val ()                   = print (Mips.pp_mips_list code) *)
           in
-              mvcode
-            @ [Mips.JAL (n, List.tabulate (maxreg, fn reg => makeConst reg))]
-            @ mvbackcode
+              code
           end
         | Assign (lv, e, p) =>
           let val (codeL,loc) = compileLVal(vtable, lv, p)
@@ -697,17 +703,18 @@ struct
                                      (* 2 contains return val*)
           val (savecode, restorecode, offset) = (* save/restore callee-saves *)
               stackSave (maxCaller+1) maxr [] [] (4*spilled)
-        in  [Mips.COMMENT ("Function " ^ fname),
-             Mips.LABEL fname,       (* function label *)
-             Mips.SW (RA, SP, "-4"), (* save return address *)
-             Mips.ADDI (SP,SP,makeConst (~4-offset))] (* move SP "up" *)
-          @ savecode                 (* save callee-saves registers *)
-          @ body1                    (* code for function body *)
-          @ [Mips.LABEL (fname^"_exit")] (* exit label *)
-          @ restorecode              (* restore callee-saves registers *)
-          @ [Mips.ADDI (SP,SP,makeConst (4+offset))] (* move SP "down" *)
-          @ [Mips.LW (RA, SP, "-4"),  (* restore return addr *)
-             Mips.JR (RA, [])]       (* return *)
+          val code = [Mips.COMMENT ("Function " ^ fname),
+                      Mips.LABEL fname,       (* function label *)
+                      Mips.SW (RA, SP, "-4"), (* save return address *)
+                      Mips.ADDI (SP,SP,makeConst (~4-offset))] (* move SP "up" *)
+                    @ savecode                 (* save callee-saves registers *)
+                    @ body1                    (* code for function body *)
+                    @ [Mips.LABEL (fname^"_exit")] (* exit label *)
+                    @ restorecode              (* restore callee-saves registers *)
+                    @ [Mips.ADDI (SP,SP,makeConst (4+offset))] (* move SP "down" *)
+                    @ [Mips.LW (RA, SP, "-4"),  (* restore return addr *)
+                       Mips.JR (RA, [])]       (* return *)
+          in code
         end
 
 (* Stack layout upon entering body1:
