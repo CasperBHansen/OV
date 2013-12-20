@@ -189,15 +189,24 @@ else raise Error("Inconsistent array rank, at ", pos
 We have partialy implemented a code which do not work properly, but it is supposed to work like this:
 When compiling and calculating the L-values of arrays, we get the symbol of the array in the symbol table and thne we check to see if the rank equals the number of indices. If that is the case then we compile all of the indice expressions and assign them a temporary register, which we can compare with the arrays n'th first entrances, which are corresponding to the arrays dimensions.
 \\
-We have gotten bound checking to work by running through the list of indices and maintain a counter, which is used to offset when we pull the n'th first values (n being the size of the array). Then we load the word on the offest and use the slt flag if the index is lower then the dimension we pulled of the metadata from the array. Afterwords we branch if the flag equals zero, because it means that the index is greater than the dimensions, which gives the error \_IllegalArrIndexError\_.
 
-Flatten array still not working correctly.
+We have gotten bound checking to work by running through the list of indices and maintain a counter, which is used to offset when we pull the n'th first values (n being the size of the array). Then we load the word on the offest and use the slt flag if the index is lower then the dimension we pulled of the metadata from the array. Afterwords we branch if the flag equals zero, because it means that the index is greater than the dimensions, which gives the error \_IllegalArrIndexError\_.
+\\
+
+Flatten array was hard to get working correctly. We accomplsihed it, when some of our errors had been pointed out and we were able to implement it correctly.
 
 \subsubsection*{Tests}%
 Task 4 has not been completed yet, so we cannot test it properly.
+\\
+
+We used {\tt arrays.pal}, {\tt simple.pal}, {\tt fibArray.pal} and {\tt fibWhile.pal} to test the array indexing. We had to use the two fibonacci programs to ensure that the error messages were consistent. They all 
 
 \subsection*{Semantics}
-We have not yet started on this part.
+Task 5 is about replacing call-by-value with call-by-value-result. To do this, we have to change the procedures policy by modifying callFun in {\tt TpInterpret.sml} and modifying compileF and compileStmt in {\tt compile.sml}.
+
+To do this we first had to brush up our understanding of call-by-value-result. We had our understading from the lectures but were still not sure about how to implement it in our compiler.
+
+We started by modifying our callFun function and implementing the function {\tt updateOuterVtable}. We were trying to do a bit much in that function but was able to keep it simple in the end. One of the problems was to call the function on multiple variables, but that was accomplished with a map function.
 
 \subsubsection*{Tests}
 Task 5 has not been completed yet, so we cannot test it properly 
