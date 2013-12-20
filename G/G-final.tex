@@ -32,9 +32,7 @@
 \thispagestyle{empty}
 \begin{multicols}{2}
 \begin{abstract}
-This document describes the development of the Paladim programming language,
-which is a pascal-like imperative language with functions and procedures, which
-uses multidimensional regular arrays.
+This document describes the development of the Paladim programming language, which is a pascal-like imperative language with functions and procedures, which uses multidimensional regular arrays.
 
 Each subtask will be addressed in its own subsection of the document.
 \end{abstract}
@@ -44,14 +42,13 @@ Each subtask will be addressed in its own subsection of the document.
 \end{multicols}
 
 \clearpage
-\section{Overview}
+\section*{Overview}
 We were given a partial implemention of the paladim language. We had to modify the implementation by creating a new parser, adding support for the missing operations, implementing type checking, implementing array indexing and implementing a call-by-value-result.
 
-\subsection{Planned schedule}
-Having a development schedule helps us keep things organized and makes sure
-that we can meet the deadlines. We provide our development schedule for our
-own benefit and such that the instructor can provide feedback on possible
-difficulties we may encounter, such that it can be  adjusted accordingly.
+We did spent a lot of time trying to understand the code and to refresh our understading of the sml language, much more time than we spend understanding the theory behind compilers.
+
+\subsection*{Planned schedule}
+Having a development schedule helps us keep things organized and makes sure that we can meet the deadlines. We provide our development schedule for our own benefit and such that the instructor can provide feedback on possible difficulties we may encounter, such that it can be  adjusted accordingly.
 \begin{figure}[H]
 	\centering
 	\begin{tabular}{|l|c|c|c|}
@@ -66,70 +63,35 @@ difficulties we may encounter, such that it can be  adjusted accordingly.
 	\label{table:schedule}
 	\caption{Our planned development schedule}
 \end{figure}
-The development schedule is, however, subject to change. For reasons given
-above, and unforeseen difficulties may or may not force us to reschedule.
+The development schedule is, however, subject to change. For reasons given above, and unforeseen difficulties may or may not force us to reschedule.
 
-\section{Progress}
+\section*{Progress}
 This section discusses the advancements, we have made in the above tasks.
 
 We had completed task 1 when we submitted the milestone rapport.
 
-\subsection{Parser}
-We were given a compiler code with a top-down parser. This is very inefficient 
-and we had to change it to a bottom-up parser. We discarded all the settings 
-called LL1 and replaced it with 'parser' which would refer to our own parser 
-in attempt to create the context free Paladim language.
+\subsection*{Parser}
+We were given a compiler code with a top-down parser. This is very inefficient and we had to change it to a bottom-up parser. We discarded all the settings called LL1 and replaced it with 'parser' which would refer to our own parser in attempt to create the context free Paladim language.
 \\
-Our initial attempt at writing the bottom-up parser in place of the top-down
-LL1 parser was unsuccesful, and we had to revert all changes. This was because
-of a lack of understanding the code and also as a consequence of some of us
-being a bit rusty in the SML language. And so the bottom-up parser was
-partially written while brushing up on the language in which it was written.
+Our initial attempt at writing the bottom-up parser in place of the top-down LL1 parser was unsuccesful, and we had to revert all changes. This was because of a lack of understanding the code and also as a consequence of some of us being a bit rusty in the SML language. And so the bottom-up parser was partially written while brushing up on the language in which it was written.
 
-For the second attempt we simply went into the {\tt compile.sh} shell script,
-and commented out the line which compiled the LL1 parser, making sure that any
-code that relied on {\tt LL1Parser.sml} was exposed, and could be accounted
-for by simply inspecting and migrating the dependency to the {\tt Parser.grm}
-instead. This proved to be very advantageous as it also gave us a complete
-overview of all the interdepencies and thereby allowed us to understand more
-about what we were actually doing.
+For the second attempt we simply went into the {\tt compile.sh} shell script, and commented out the line which compiled the LL1 parser, making sure that any code that relied on {\tt LL1Parser.sml} was exposed, and could be accounted for by simply inspecting and migrating the dependency to the {\tt Parser.grm} instead. This proved to be very advantageous as it also gave us a complete overview of all the interdepencies and thereby allowed us to understand more about what we were actually doing.
 
-Firstly, we saw that {\tt Driver.sml} was performing calls on
-{\tt LL1Parser.sml}, which was conveniently commented and prepared for the
-transition over into {\tt Parser.grm}. So, commenting out and replacing these
-lines with the appropriate ones, as directed in the assignment text, we turned
-our attention to {\tt Lexer.lex}. The lexer depended heavily on
-{\tt LL1Parser.sml} as all tokens were declared in that file, which gave rise
-to declaring these in {\tt Parser.grm} instead, effectively removing that
-dependency. When all tokens were replaced, the first rule was implemented in
-{\tt Parser.grm}, the {\tt Prog} rule, which allowed us to see the parser
-working and sparked the epiphany of how it actually functioned --- this was,
-again, because we weren't used to working with the mosmlyac environment, and
-so getting things started was highly based on pure experimentation and reading
-the documentation, as well as examples provided as course materials.
+Firstly, we saw that {\tt Driver.sml} was performing calls on {\tt LL1Parser.sml}, which was conveniently commented and prepared for the transition over into {\tt Parser.grm}. So, commenting out and replacing these lines with the appropriate ones, as directed in the assignment text, we turned our attention to {\tt Lexer.lex}. The lexer depended heavily on {\tt LL1Parser.sml} as all tokens were declared in that file, which gave rise to declaring these in {\tt Parser.grm} instead, effectively removing that dependency. When all tokens were replaced, the first rule was implemented in {\tt Parser.grm}, the {\tt Prog} rule, which allowed us to see the parser working and sparked the epiphany of how it actually functioned --- this was, again, because we weren't used to working with the mosmlyac environment, and so getting things started was highly based on pure experimentation and reading the documentation, as well as examples provided as course materials.
 
-As soon as one rule was implemented, most of the others followed right after.
-The most challenging part of this subtask was understanding the structure of
-the mosmlyac environment, as well as refreshing the SML language.
+As soon as one rule was implemented, most of the others followed right after. The most challenging part of this subtask was understanding the structure of the mosmlyac environment, as well as refreshing the SML language.
 
 After the feedback on the milestone submission, we fixed a lot of shift/reduce conflicts and modified our expression type acording to the feedback provided.
 
-\subsubsection{Tests}
-We didn't have enough resources to put extensive efforts into testing. We did,
-however run each and every Paladim program provided in the DATA folder. By the
-time the parser had been succesfully migrated to the bottom-up method using
-context-free gramma in {\tt Parser.grm}, from the top-down {\tt LL1Parser.sml}
-all of these programs ran without any parser errors.
+\subsubsection*{Tests}
+We didn't have enough resources to put extensive efforts into testing. We did, however run each and every Paladim program provided in the DATA folder. By the time the parser had been succesfully migrated to the bottom-up method using context-free gramma in {\tt Parser.grm}, from the top-down {\tt LL1Parser.sml} all of these programs ran without any parser errors.
 
 \paragraph{Single-shot testing}
-The testing has so far only involved single-shot testing, insofar as it has
-been applicable.
+The testing has so far only involved single-shot testing, insofar as it has been applicable.
 
-Generally we have tested the implementation by recompiling the source, and
-testing each file, thus, letting us see 1) the compiler output for any
-warnings/errors and 2) the programme output, so that we may verify that it is correct.
+Generally we have tested the implementation by recompiling the source, and testing each file, thus, letting us see 1) the compiler output for any warnings/errors and 2) the programme output, so that we may verify that it is correct.
 
-\subsection{Arithmetic and logic}
+\subsection*{Arithmetic and logic}
 Some functions were missing in the code, namely times, divide, or and not. Those were necessary to implement in order for the remaining tasks to be completed.
 
 To start of with, we uncommented the parts of {\tt TpAbSyn.sml} which involved  those functions. We received some  warnings about pattern matching not exhaustive and some syntax errors, but they have all been fixed over time.
@@ -170,12 +132,14 @@ fun evalNot (BVal (Log bv), pos) = BVal (Log ( not bv ))
 
 Lastly in {\tt type.sml} the operators needed to be typechecked. This part could only be partially done at this point, because the rest were a part of task 3. During this time they were made to look like the already implemented operators which work similarly.
 
-\subsubsection{Tests}
-We ran the paladim programs in the DATA folder and we also created new programs to make sure that all the new functions have been implemented correctly. We are currently working on precendence problems regarding And, Or and Not, but Times and Div are fully functional.
+\subsubsection*{Tests}
+We ran the paladim programs in the DATA folder and we also created new programs to make sure that all the new functions have been implemented correctly. We found some precendence problems regarding And, Or and Not which proved to be rather troublesome, but Times and Div are fully functional.
+
+The programs which we created ouselves were: {\tt testArithmetic.pal}, which gave correct output and {\tt precAssoc.pal}, which highlighted our precedens problems. We fixed the precedens problems, but will return to them in task 3, where they were solved.
 
 Typechecking of the new functions could not be done at this time but will be done during task 3, where the rest of the typechecking are also implemented.
  
-\subsection{Type inference- and checking}
+\subsection*{Type inference- and checking}
 Task 3 involved typechecking in {\tt type.sml}. The code did not infer any types and we had to implement that. We modified the code parts in {\tt type.sml} where typechecking took place.
 
 \begin{lstlisting}
@@ -194,7 +158,7 @@ Example of modifed code:
 We had some problems with Equal and Less, where we tried to pass a Type but needed to pass an ExpectedType, but we resolved that by adding KnownType after typeOfExp e1\_new.
 
 \begin{lstlisting}
-First partEqual function with working type:
+First part of Equal function with working type:
     | typeCheckExp ( vtab, AbSyn.Equal(e1, e2, pos), _ ) =
         let val e1_new = typeCheckExp(vtab, e1, UnknownType)
             val e2_new = typeCheckExp(vtab, e2, KnownType (typeOfExp e1_new))
@@ -203,21 +167,35 @@ First partEqual function with working type:
 
 The typechecking for funtion call "new" has also been made but is not yet tested.
 
-\subsubsection{Tests}
-Equal and Less have been tested eith the testprogram {\tt Logical.pal} and the testprogram {\tt exercise3.pal} and have been found to be working correctly. Times and Div are also working correctly.
+\subsubsection*{Tests}
+Equal and Less have been tested with the testprogram {\tt Logical.pal} and the testprogram {\tt exercise3.pal} and have been found to be working correctly. Plus, Minus, Times and Div are also working correctly according to handed out tests involving aritmethric operations. And, Or and Not are also giving the correct typing, but had precedens problems. They were eventually fixed once we found a problem in {\tt type.sml} where orelse should have replaced andalso.
+
+All of the handed out testing programs have also been used, to ensure that any type interference errors have been solved.
 
 The function call "new" cannot be tested until task 4, so the testing will be done as part of task 4.
 
-\subsection{Code generation}
+\subsection*{Code generation}
+Our task in taks 4 is to implement array indexing, both in the compiler and in the typechecker. To do this we need a variable holding an array, which can be used in indexing expressions, both to use the stored value in an expression, and to assign a new value to the location in an assignment.
+
+This task was the hardest task to complete. We had a lot of trouble with different parts of the code. One such example was a problem with getting rank out of the array. The solution was rather simple, because we found out that we could simply find the length of the variable inds and that was the rank.
+
+\begin{lstlisting}
+The part of the code which dealt with our problem:
+if rank > 0 andalso length inds = rank
+then LValue( Index((id, id_tp), new_inds), pos)
+else raise Error("Inconsistent array rank, at ", pos
+\end{lstlisting}
+
+We have partialy implemented a code which do not wprk properly, but it is supposed to work like this:
+When compiling and calculating the L-values of arrays, we get the symbol of the array in the symbol table and thne we check to see if the rank equals the number of indices. If that is the case then we compile all of the indice expressions and assign them a temporary register, which we can compare with the arrays n'th first entrances, which are corresponding to the arrays dimensions.
+
+\subsubsection*{Tests}%
+Task 4 has not been completed yet, so we cannot test it properly.
+
+\subsection*{Semantics}
 We have not yet started on this part.
 
-\subsubsection{Tests}%
-{\it not applicable at this time}%
-
-\subsection{Semantics}
-We have not yet started on this part.
-
-\subsubsection{Tests}
+\subsubsection*{Tests}
 {\it not applicable at this time}%
 
 \end{document}
