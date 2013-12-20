@@ -176,7 +176,7 @@ The function call "new" cannot be tested until task 4, so the testing will be do
 
 \subsection*{Code generation}
 Our task in taks 4 is to implement array indexing, both in the compiler and in the typechecker. To do this we need a variable holding an array, which can be used in indexing expressions, both to use the stored value in an expression, and to assign a new value to the location in an assignment.
-
+\\
 This task was the hardest task to complete. We had a lot of trouble with different parts of the code. One such example was a problem with getting rank out of the array. The solution was rather simple, because we found out that we could simply find the length of the variable inds and that was the rank.
 
 \begin{lstlisting}
@@ -186,8 +186,12 @@ then LValue( Index((id, id_tp), new_inds), pos)
 else raise Error("Inconsistent array rank, at ", pos
 \end{lstlisting}
 
-We have partialy implemented a code which do not wprk properly, but it is supposed to work like this:
+We have partialy implemented a code which do not work properly, but it is supposed to work like this:
 When compiling and calculating the L-values of arrays, we get the symbol of the array in the symbol table and thne we check to see if the rank equals the number of indices. If that is the case then we compile all of the indice expressions and assign them a temporary register, which we can compare with the arrays n'th first entrances, which are corresponding to the arrays dimensions.
+\\
+We have gotten bound checking to work by running through the list of indices and maintain a counter, which is used to offset when we pull the n'th first values (n being the size of the array). Then we load the word on the offest and use the slt flag if the index is lower then the dimension we pulled of the metadata from the array. Afterwords we branch if the flag equals zero, because it means that the index is greater than the dimensions, which gives the error \_IllegalArrIndexError\_.
+
+Flatten array still not working correctly.
 
 \subsubsection*{Tests}%
 Task 4 has not been completed yet, so we cannot test it properly.
@@ -196,7 +200,7 @@ Task 4 has not been completed yet, so we cannot test it properly.
 We have not yet started on this part.
 
 \subsubsection*{Tests}
-{\it not applicable at this time}%
+Task 5 has not been completed yet, so we cannot test it properly 
 
 \end{document}
 
