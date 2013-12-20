@@ -215,26 +215,26 @@ In an attempt to solve the Code Generator-part of Task 5, we tried changing the
 following in our compiler:
 \begin{enumerate}[i]
     \item Utilise the ``general-purpose'' {\tt compileStmt}-case for {\tt ProcCall},
-        to include a {\tt movebackcode} value, retrieving (ii) and
-        setting the updated (or perhaps rather {\it all}\/) values in vtab.
+          to include a {\tt movebackcode} value, retrieving (ii) and
+          setting the updated (or perhaps rather {\it all}\/) values in vtab.
     \item Include a function {\tt resArgs}, to be called by the above, reversing
-        the functionality of {\tt putArgs} (i.e.\ generate the assembly code to
-        set the values of the formal arguments from callers to the values set
-        in their respective callees.\\
-        This did not work and is commented out in our source code, hence the
-        {\it call-by-value-result}\/ evaluation strategy is not functional in
-        Paladim programmes compiled by our compiler. The listing below shows
-        the {\tt resArgs} function.\\
-        The reason it did not work is that we did not find a way to retrieve
-        the proper registers used when {\tt putArgs} was called. One way this
-        could have been solved --- however inefficient it might have been ---
-        would have been to update {\tt putArgs} to store the values in a
-        seperate location, and then traversing this location when calling
-        {\tt resArgs}. It is suspected that such functionality could have
-        been provided by {\tt compileF}.
+          the functionality of {\tt putArgs} (i.e.\ generate the assembly code to
+          set the values of the formal arguments from callers to the values set
+          in their respective callees.\\
+          This did not work and is commented out in our source code, hence the
+          {\it call-by-value-result}\/ evaluation strategy is not functional in
+          Paladim programmes compiled by our compiler. The listing below shows
+          the {\tt resArgs} function.\\
+          The reason it did not work is that we did not find a way to retrieve
+          the proper registers used when {\tt putArgs} was called. One way this
+          could have been solved --- however inefficient it might have been ---
+          would have been to update {\tt putArgs} to store the values in a
+          seperate location, and then traversing this location when calling
+          {\tt resArgs}. It is suspected that such functionality could have
+          been provided by {\tt compileF}.
     \item Since the above did not work and we were being pressed for time
-        we did not implement anything in {\tt compileF}, although that might
-        have solved our problem.
+          we did not implement anything in {\tt compileF}, although that might
+          have solved our problem.
 \end{enumerate} 
 
 \begin{lstlisting}
