@@ -422,13 +422,27 @@ struct
       let
           val t1 = "_funarg_"^newName()
           val code1 = compileExp(vtable, e, t1)
-          val (code2, maxreg) = putArgs es vtable (reg+1)
+          val (code2, maxreg) = putArgs es vtable (reg + 1)
       in
           (   code1                          (* compute arg1 *)
             @ code2                          (* compute rest *)
             @ [Mips.MOVE (makeConst reg,t1)] (* store in reg *)
             , maxreg)
       end
+
+    and resArgs [] vtable reg = ([], reg)
+      | resArgs (e::es) vtable reg =
+      let
+        val t1 = "_funarg_"^newName()
+        val code1 = compileExp(vtable, e, t1)
+        val (code2, minreg) = resArgs es vtable (reg - 1)
+      in
+        (   code1
+          @ code2
+          @ [Mips.MOVE (makeConst reg, t1)]
+          , minreg)
+      end
+
 (** TASK 5: You may want to create a function slightly similar to putArgs,
  *  but instead moving args back to registers. **)
 
@@ -520,9 +534,11 @@ struct
         (***  4. Find the address of the element in memory by      ***)
         (***     combining the flat index, the basic element type  ***)
         (***     and the pointer to the array.                     ***)
+        (***     DONE!                                             ***)
         (***  5. Concat all the generated code and return it       ***)
         (***     with the register containing the final address    ***)
         (***     of the element.                                   ***)
+        (***     DONE!                                             ***)
         (***     Bonus question: can you implement it without      ***)
         (***                        using the stored strides?      ***)
         (*************************************************************)
