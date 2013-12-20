@@ -459,6 +459,16 @@ struct
                             in
                               chkBound (d + 1, es, mips @ exps)
                             end;
+
+                          fun flatIdx (acc, cnt) =
+                            let val loc_arr = 
+                                val s_loc   = "_loc_" ^ newName()
+                                val curr_s  = [Mips.LW (s_loc, m, makeConst (rank * 4 * cnt))]
+                                val next    = cnt + 1
+                            in
+                              if next = rank then flatIdx( acc @ curr_s, next ) else (acc @ curr_s)
+                            end;
+
                       in if rank = length inds then
                           ( chkBound (0, inds, []) (* chkBounds indices rank *)
                           , Mem(m))
@@ -477,7 +487,7 @@ struct
         (***     if a given index is out of bounds. If this is     ***)
         (***     the case your code needs to jump to the           ***)
         (***     label _IllegalArrIndexError_.                     ***)
-        (***     DONE!                                             ***)
+        (***     DONE! (MAYBE :P )                                 ***)
         (***  3. Compute the flat index using the stored strides.  ***)
         (***     It might be easier to calculate the contribution  ***)
         (***     from the last index seperately, as the            ***)
