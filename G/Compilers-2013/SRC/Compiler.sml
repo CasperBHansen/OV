@@ -431,7 +431,6 @@ struct
 (** TASK 5: You may want to create a function slightly similar to putArgs,
  *  but instead moving args back to registers. **)
 
-
   and compileLVal( vtab : VTab, Var (n,_) : LVAL, pos : Pos ) : Mips.mips list * Location =
         ( case SymTab.lookup n vtab of
             SOME reg => ([], Reg reg)
@@ -582,8 +581,11 @@ struct
         | ProcCall ((n,_), es, p) => 
           let
               val (mvcode, maxreg) = putArgs es vtable minReg
+              val mvbackcode       = resArgs es vtable maxReg
           in
-              mvcode @ [Mips.JAL (n, List.tabulate (maxreg, fn reg => makeConst reg))]
+              mvcode
+            @ [Mips.JAL (n, List.tabulate (maxreg, fn reg => makeConst reg))]
+            @ mvbackcode
           end
         | Assign (lv, e, p) =>
           let val (codeL,loc) = compileLVal(vtable, lv, p)
@@ -671,6 +673,7 @@ struct
            * i.e. something similar to 'argcode', just the other way round.  Use the
            * value of 'isProc' to determine whether you are dealing with a function
            * or a procedure. **)
+          
           val body = compileStmts block vtable (fname ^ "_exit")
           val (body1, _, maxr, spilled) =  (* call register allocator *)
               RegAlloc.registerAlloc ( argcode @ body )
