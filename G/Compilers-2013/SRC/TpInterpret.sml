@@ -213,7 +213,7 @@ fun execPgm funlst =
 (**************************************************)
 (******* Executing Function/Procedure Calls *******)
 (*** Input:                                     ***)
-(***   1. the function declaration as a tiple of***)
+(***   1. the function declaration as a tiple of***) (* Iiiiii don't think so - perhaps a tuple?? *)
 (***      the return type (rtp), fun/proc name  ***)
 (***      (fid), formal-argument declarations   ***)
 (***      (farg), fun/proc body (body), position***)
@@ -303,8 +303,11 @@ and callFun ( (rtp : Type option, fid : string, fargs : Dec list, body : StmtBlo
             let val new_vtab = bindTypeIds(fargs, aargs, fid, pdcl, pcall)
                 val res  = execBlock( body, new_vtab, ftab )
             in  ( case (rtp, res) of
-                    (NONE  , _     ) => NONE (* Procedure, hence modify this code for TASK 5. *) 
-
+                    (NONE  , _     ) =>
+                    (
+                      (* Should somehow use aexps *)
+                      
+                    )  (* Procedure, hence modify this code for TASK 5. *) 
                   | (SOME t, SOME r) => if   typesEqual(t, typeOfVal r) 
                                         then SOME r
                                         else raise Error("in call fun: result does " ^
@@ -320,7 +323,17 @@ and callFun ( (rtp : Type option, fid : string, fargs : Dec list, body : StmtBlo
  * result requires that argument expressions are variable names, i.e. expressions like
  * '2 + x' do not work, since '2 * x' is not an LValue variable name.
  *)
-and updateOuterVtable vtabOuter vtabInner (out_exp, in_arg) = ()
+and updateOuterVtable vtabOuter vtabInner (LValue out_exp, in_arg) =
+    let val (oexp, opos) = out_exp;
+        val varToBind    = in_arg (* Somehow determine that it is a terminal *)
+    in
+      (case SymTab.lookup in_arg vtabOuter of
+           SOME loc = (* Code to update *)
+                      
+         | NONE     => Error ("inner argument not present in caller, at ", opos))
+    end
+  | updateOuterVtable vtabOuter vtabInner (_, in_arg) = raise Error("in call by value-result: Argument " ^
+                                                                    "must be an identifier name, at some POSITION")
 (* Implement this function to complete TASK 5 in the interpreter. *)
 
 

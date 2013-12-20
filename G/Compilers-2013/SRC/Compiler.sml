@@ -514,8 +514,8 @@ struct
                                                        , Mips.ADD (r_loc, r_loc, e_loc)
                                                        ])
                                 end
-                              | flatIdx(_,_,_) = raise Error ("This is a veeweeery dangerous place. You done fuck-up!", pos)
-                      end(*
+                              | flatIdx(_,_,_) = raise Error ("This is a veeweeery dangerous place. You done fuck-up!", pos);
+                        end(*
                           fun strides (acc, e::[], _  ) = 
                             let val e_loc = "_loc_" ^ newName()
                             in      acc @ [Mips.ADD (r_loc, r_loc, e_loc)] end
