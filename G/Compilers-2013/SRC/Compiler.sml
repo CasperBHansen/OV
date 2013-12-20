@@ -443,19 +443,23 @@ struct
 
     | compileLVal( vtab : VTab, Index ((n,t),inds) : LVAL, pos : Pos ) =
         ( case SymTab.lookup n vtab of
-            SOME m => let 
-                          val r_loc = "_ret_" ^ newName()
+            SOME m => let val r_loc = "_ret_" ^ newName()
                           val e_loc = "_tmp_" ^ newName()
 
                           val rank = case t of
                                 Array(r, btp) => r
                               | _             => raise Error("Not an array, at ", pos)
+
+                          val bytes = case basicType t of
+                                      BType Int  => 4
+                                    | _          => 1
+
                           
                           fun chkBounds (d, e::es) =
-                            let val exps = compileExp ( vtab, e, e_loc ) @ 
+                            let val exps = compileExp ( vtab, e, e_loc ) @
                                          [ Mips.LW  (r_loc, m, makeConst (d * 4)                 )
                                          , Mips.SLT (r_loc, e_loc, r_loc                         )
-                                         , Mips.BEQ (r_loc, makeConst 0, "_IllegalArrIndexError_")]
+                                         , Mips.BEQ (r_loc, "0", "_IllegalArrIndexError_")]
                             in
                               exps @ chkBounds (d + 1, es)
                             end
@@ -463,30 +467,36 @@ struct
 
                           local
                             val s_loc = "_tmp_" ^ newName()
+                            val b_loc = "_size_" ^ newName()
+                            val int_size = 4
                           in
-                            fun flattenIndex (e::[], _) = compileExp(vtab, e, e_loc)
-                                                        @ [Mips.ADD (r_loc, r_loc, e_loc)]
-                              | flattenIndex (e::es, c) =
+                            fun flattenIndex (e::[], _, size, acc)
+                                = [Mips.LW(r_loc, m, makeConst (int_size * (2 * rank - 1)))] (* get initial address *)
+                                @ [Mips.LI(b_loc, makeConst size)]
+                                @ acc (* in-between offsets (recursive) *)
+                                @ compileExp(vtab, e, e_loc) (* compile the index expression *)
+                                @ [Mips.MUL(e_loc, e_loc, b_loc)] (* size alignment *)
+                                @ [Mips.ADD(r_loc, r_loc, e_loc)] (* add to the result *)
+                              | flattenIndex (e::es, c, size, acc) =
                               let
-                                val next = c + 1
-                                val bytes = 4
-                                val offset = bytes * (rank + c)
+                                val next = (c + 1)
+                                val offset = int_size * (rank + c)
+                                val code = acc
+                                         @ compileExp(vtab, e, e_loc)
+                                         @ [Mips.LW (s_loc, m, makeConst offset)]     (* load the stride *)
+                                         @ [Mips.MUL(e_loc, e_loc, s_loc)]            (* multiply by index *)
+                                         @ [Mips.MUL(e_loc, e_loc, b_loc)]            (* size alignment *)
+                                         @ [Mips.ADD(r_loc, r_loc, e_loc)]            (* add to address offset *)
                               in
-                                flattenIndex(es, next)
-                                @ [Mips.LW (s_loc, m, makeConst offset),
-                                   Mips.MUL(e_loc, e_loc, s_loc),
-                                   Mips.ADD(r_loc, r_loc, e_loc)]
+                                flattenIndex(es, next, size, code)
                               end
                               | flattenIndex _ = raise Error ("You should never go here, Simba.", pos)
                           end
 
-                      in if rank = length inds then
-                          (
-                            chkBounds (0, inds)
-                          @ [Mips.MOVE (r_loc, m)] @ flattenIndex (inds, 0)
-                          , Reg r_loc)
-                         else
-                          raise Error ("Indices inconsistent with array rank, at ", pos)
+                          val allcode = chkBounds (0, inds) @ flattenIndex(inds, 0, bytes, [])
+                          val () = print (Mips.pp_mips_list allcode)
+
+                      in (allcode, Mem r_loc)
                       end
           | NONE   => raise Error ("unknown variable "^n, pos)
         )

@@ -4,28 +4,26 @@ procedure main()
 var i : int;
     j : int;
     k : int;
-    a : array of array of int;
+    a : array of array of char;
 begin
-    // fill array
-    a := new(2,3);
-
+    a := new(3, 2);
+    
     i := 0;
-    j := 0;
-    write( a[4,5]);
-    while j < 3 do
+    while i < 3 do
     begin
-      write( a[0,j]);
-      j := j + 1;
-      if j < 3 then write(',');
-    end;
+      j := 0;
+      while j < 2 do
+      begin
+        if i < j then
+          a[i,j] := 'a'
+        else
+          a[i,j] := 'b';
 
-    i := 1;
-    j := 0;
-    while j < 3 do
-    begin
-      write( a[0,j]);
-      j := j + 1;
-      if j < 3 then write(',');
+        write( a[i,j] );
+        write(' ');
+        j := j + 1;
+      end;
+      i := i + 1;
     end;
 
 end; // main
