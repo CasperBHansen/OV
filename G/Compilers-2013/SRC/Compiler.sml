@@ -451,21 +451,20 @@ struct
                                 Array(r, btp) => r
                               | _             => raise Error("Not an array, at ", pos)
                           
-                          fun chkBounds (_, []) = []
-                            | chkBounds (d, e::es) =
+                          fun chkBounds (d, e::es) =
                             let val exps = compileExp ( vtab, e, e_loc ) @ 
                                          [ Mips.LW  (r_loc, m, makeConst (d * 4)                 )
                                          , Mips.SLT (r_loc, e_loc, r_loc                         )
                                          , Mips.BEQ (r_loc, makeConst 0, "_IllegalArrIndexError_")]
                             in
                               exps @ chkBounds (d + 1, es)
-                            end;
+                            end
+                            | chkBounds (_, []) = []
 
                           local
                             val s_loc = "_tmp_" ^ newName()
                           in
-                            fun flattenIndex (e::[], _) = [Mips.MOVE (r_loc, m)]
-                                                        @ compileExp(vtab, e, e_loc)
+                            fun flattenIndex (e::[], _) = compileExp(vtab, e, e_loc)
                                                         @ [Mips.ADD (r_loc, r_loc, e_loc)]
                               | flattenIndex (e::es, c) =
                               let
@@ -484,7 +483,7 @@ struct
                       in if rank = length inds then
                           (
                             chkBounds (0, inds)
-                          @ flattenIndex (inds, 0)
+                          @ [Mips.MOVE (r_loc, m)] @ flattenIndex (inds, 0)
                           , Reg r_loc)
                          else
                           raise Error ("Indices inconsistent with array rank, at ", pos)
