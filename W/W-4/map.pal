@@ -1,0 +1,27 @@
+program Map;
+
+function f(y : int) : int
+	return 2 * y;
+
+procedure main()
+var
+	x : array of array of int;
+	y : array of array of int;
+	i : int;
+	j : int;
+begin
+	x := { {1, 2, 3}, {4, 5, 6} };
+	y := new(2, 3);
+
+	i := 0;
+	while i < 2 do
+	begin
+		j := 0;
+		while j < 3 do
+		begin
+			y[i,j] := f( x[i,j] );
+			j := j + 1;
+		end;
+		i := i + 1;
+	end;
+end;

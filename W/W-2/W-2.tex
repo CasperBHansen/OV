@@ -1,0 +1,208 @@
+\documentclass[11pt,a4paper]{article}
+
+%========== PACKAGES ==========%
+
+\usepackage{a4wide} 			% save some rainforests
+\usepackage{amsmath,amssymb}	% for mathematical notation
+\usepackage[english]{babel}		% language definition
+\usepackage{color}				% to make syntax pretty
+\usepackage{enumerate}			% roman enumeration
+\usepackage{fancyref}			% fancy references
+\usepackage{float}				% for precise placement
+\usepackage{graphicx}			% importing graphics
+\usepackage{listings}			% code listings
+\usepackage[utf8]{inputenc} 	% can we has UTF-8, plox
+\usepackage{multicol} 			% for column layout
+\usepackage{tikz} 				% pretty drawings
+
+\usetikzlibrary{automata,arrows,positioning}	% make things easier
+
+%========== DEFINITIONS ==========%
+
+\definecolor{comment}{rgb}		{0.38, 0.62, 0.38}
+\definecolor{keyword}{rgb}		{0.10, 0.10, 0.81}
+\definecolor{identifier}{rgb}	{0.00, 0.00, 0.00}
+\definecolor{string}{rgb}		{0.50, 0.50, 0.50}
+
+\let\imp\to
+
+%========== SETTINGS ==========%
+
+\lstset
+{
+	% general settings
+	numbers=left,
+	frame=single,
+	basicstyle=\footnotesize\ttfamily,
+	tabsize=2,
+	% syntax highlighting
+	commentstyle=\color{comment},
+	keywordstyle=\color{keyword},
+	identifierstyle=\color{identifier},
+	stringstyle=\color{string},
+}
+
+%========== DECLARATIONS ==========%
+
+\title
+{
+	{\large Individual Assignment 2}\\
+	Compilers
+}
+
+\author
+{
+	Casper B. Hansen\\
+	Department of Computer Science\\
+	University of Copenhagen\\
+	{\tt fvx507@alumni.ku.dk}
+}
+
+%========== DOCUMENT ==========%
+
+\begin{document}
+
+\clearpage
+\maketitle
+
+\section{Writing Context-Free Grammars}
+Write unambiguous grammars for the following languages over the alphabet
+$\Sigma = \{a, b, c\}$:
+% Write mosmlyacc grammar files for your grammars to check them. A grammar
+% which does not cause conflicts is certain to be unambiguous. However, for
+% (b), it will not be possible to get a grammar without conflicts. Why?
+
+\subsection*{a \mdseries Words that match regular expression {\tt a*b*} which
+contain more a's than b's.}
+\begin{align*}
+	S &\imp \epsilon | X \\
+	X &\imp a|aXY \\
+	Y &\imp \epsilon | aYb
+\end{align*}
+
+\subsection*{b \mdseries Palindromes (words that are identical when read
+backward and forward).}
+\begin{align*}
+	S &\imp \epsilon | a | b | c | aSa | bSb | cSc
+\end{align*}
+
+\newpage
+\section{LL(1)-Parser Construction}
+Construct an LL(1) parser, taking the following grammar as a starting point:
+\begin{align*}
+	Z &\imp b | X Y Z \\
+	Y &\imp \epsilon | c \\
+	X &\imp Y | a
+\end{align*}
+with the terminal symbols $a$, $b$, and $c$.
+
+\subsection*{a \mdseries Determine which nonterminals are nullable and
+calculate first sets of all right-hand sides of the productions}
+In determining which nonterminals are nullable we first describe the
+production rules as a set of boolean equations
+\begin{align*}
+	Nullable(Z) &= Nullable(b) \lor Nullable(X) \land Nullable(Y) \land Nullable(Z) \\
+	Nullable(Y) &= Nullable(\epsilon) \lor Nullable(c) \\
+	Nullable(X) &= Nullable(Y) \lor Nullable(a) \\\\
+	Nullable(\epsilon) &= {\tt true} \\
+	Nullable(\alpha) &= {\tt false} \quad \text{where $\alpha \in \{a, b, c\}$}\\
+	Nullable(Y) &= Nullable(Y) \\
+	Nullable(XYZ) &= Nullable(X) \land Nullable(Y) \land Nullable(Z)
+\end{align*}
+From these equations we can now recursively iterate over the equations until
+we find the calculations do not alter value. We do so by initially assuming
+all to be {\tt false},
+\begin{figure}[H]
+	\center
+	\begin{tabular}{c|cccc}
+		{\bf Right-hand side} & {\bf Initial} & {\bf 1st} & {\bf 2nd} & {\bf 3rd} \\ \hline
+		$\epsilon$ 	& {\tt false} & {\tt true} & {\tt true} & {\tt true} \\
+		$a$ 		& {\tt false} & {\tt false} & {\tt false} & {\tt false} \\
+		$b$ 		& {\tt false} & {\tt false} & {\tt false} & {\tt false} \\
+		$c$ 		& {\tt false} & {\tt false} & {\tt false} & {\tt false} \\
+		$Y$ 		& {\tt false} & {\tt false} & {\tt true} & {\tt true} \\
+		$XYZ$ 		& {\tt false} & {\tt false} & {\tt false} & {\tt false} \\ \hline
+		{\bf Nonterminal} & {\ } & {\ } \\ \hline
+		$Z$ 		& {\tt false} & {\tt false} & {\tt false} & {\tt false} \\
+		$Y$ 		& {\tt false} & {\tt true} & {\tt true} & {\tt true} \\
+		$X$ 		& {\tt false} & {\tt false} & {\tt true} & {\tt true} \\
+	\end{tabular}
+	\label{table:nullable}
+	\caption{Recursive iterations over the boolean equations}
+\end{figure}
+From the table above, we get that the nonterminals $X$ and $Y$ are nullable.
+\newpage
+We can now proceed to calculate the first sets of the right-hand sides in a
+similar fashion, by writing up the recursive set equations.
+\begin{align*}
+	FIRST(Z) &= FIRST(b) \cup FIRST(XYZ) \\
+	FIRST(Y) &= FIRST(\epsilon) \cup FIRST(c) \\
+	FIRST(X) &= FIRST(Y) \cup FIRST(a) \\\\
+	FIRST(\epsilon) &= \emptyset \\
+	FIRST(\alpha) &= \{\alpha\} \quad \text{where $\alpha \in \{a, b, c\}$} \\
+	FIRST(Y) &= FIRST(Y) \\
+	FIRST(XYZ) &= FIRST(X) \cup FIRST(Y) \cup FIRST(Z)
+\end{align*}
+And then recursively iterate over the set equations until no further changes
+are made.
+\begin{figure}[H]
+	\center
+	\begin{tabular}{c|cccc}
+		{\bf Right-hand side} & {\bf Initial} & {\bf 1st} & {\bf 2nd} & {\bf 3rd} \\ \hline
+		$\epsilon$ 	& $\emptyset$ & $\emptyset$ & $\emptyset$ & $\emptyset$ \\
+		$a$ 		& $\emptyset$ & $\{a\}$ & $\{a\}$ & $\{a\}$ \\
+		$b$ 		& $\emptyset$ & $\{b\}$ & $\{b\}$ & $\{b\}$ \\
+		$c$ 		& $\emptyset$ & $\{c\}$ & $\{c\}$ & $\{c\}$ \\
+		$Y$ 		& $\emptyset$ & $\emptyset$ & $\{c\}$ & $\{c\}$ \\
+		$XYZ$ 		& $\emptyset$ & $\emptyset$ & $\{a,b,c\}$ & $\{a,b,c\}$ \\ \hline
+		{\bf Nonterminal} & {\ } & {\ } \\ \hline
+		$Z$ 		& $\emptyset$ & $\{b\}$ & $\{a,b,c\}$ & $\{a,b,c\}$ \\
+		$Y$ 		& $\emptyset$ & $\{c\}$ & $\{c\}$ & $\{c\}$ \\
+		$X$ 		& $\emptyset$ & $\{a\}$ & $\{a,c\}$ & $\{a,c\}$ \\
+	\end{tabular}
+	\label{table:first-sets}
+	\caption{Recursive iterations over the first sets}
+\end{figure}
+...
+\begin{align*}
+	Z &\imp b \\
+	Z &\imp X Y Z \\
+	Y &\imp \epsilon \\
+	Y &\imp c \\
+	X &\imp Y \\
+	X &\imp a
+\end{align*}
+\begin{align*}
+	T &\imp R \\
+	T &\imp aTc \\
+	R &\imp \epsilon \\
+	R &\imp bR
+\end{align*}
+
+\subsection*{b \mdseries Calculate follow sets for all nonterminals (adding an
+extra start production to recognise the end of the input, denoted by "\$")}
+...
+
+\subsection*{c \mdseries Determine the look-aheads sets of all productions and
+put together a parse table for a predictive parser (as shown in the lecture
+slides)}
+...
+
+\newpage
+\section{SLR Parser Construction}
+Make up a very small grammar which contains left-recursion, to demonstrate
+that left-recursion is not a problem for LR-Parsing.
+% If you want, you can use mosmlyacc for this task. When run with flag --output,
+% mosmlyacc will produce a file with information about the underlying DFA for
+% the generated SLR-parser. If you use mosmlyacc, hand in the .grm files you
+% have used.
+
+\subsection*{a \mdseries Show that your grammar does not generate conflicts
+(by providing a parse table)}
+...
+
+\subsection*{b \mdseries Compare your grammar to an equivalent one that uses
+right-recursion. How does the parse stack grow when parsing input?}
+...
+
+\end{document}

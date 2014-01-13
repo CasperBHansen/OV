@@ -1,0 +1,271 @@
+\documentclass[11pt,a4paper]{article}
+
+%========== PACKAGES ==========%
+
+\usepackage{a4wide} 			% save some rainforests
+\usepackage{amsmath,amssymb}	% for mathematical notation
+\usepackage[english]{babel}		% language definition
+\usepackage{color}				% to make syntax pretty
+\usepackage{enumerate}			% roman enumeration
+\usepackage{fancyref}			% fancy references
+\usepackage{float}				% for precise placement
+\usepackage{graphicx}			% importing graphics
+\usepackage[utf8]{inputenc} 	% can we has UTF-8, plox
+\usepackage{listings}			% code listings
+\usepackage{multicol} 			% for column layout
+
+%========== DEFINITIONS ==========%
+
+\definecolor{comment}{rgb}		{0.38, 0.62, 0.38}
+\definecolor{keyword}{rgb}		{0.10, 0.10, 0.81}
+\definecolor{identifier}{rgb}	{0.00, 0.00, 0.00}
+\definecolor{string}{rgb}		{0.50, 0.50, 0.50}
+
+\let\imp\to
+
+\newcommand{\specialcell}[2][l]{%
+\begin{tabular}[#1]{@{}l@{}}#2\end{tabular}}
+
+%========== SETTINGS ==========%
+
+\lstset
+{
+	% general settings
+	numbers=left,
+	frame=single,
+	basicstyle=\footnotesize\ttfamily,
+	tabsize=2,
+	% syntax highlighting
+	commentstyle=\color{comment},
+	keywordstyle=\color{keyword},
+	identifierstyle=\color{identifier},
+	stringstyle=\color{string},
+}
+
+%========== DECLARATIONS ==========%
+
+\title
+{
+	{\large Individual Assignment 4}\\
+	Compilers
+}
+
+\author
+{
+	Casper B. Hansen\\
+	Department of Computer Science\\
+	University of Copenhagen\\
+	{\tt fvx507@alumni.ku.dk}
+}
+
+%========== DOCUMENT ==========%
+
+\begin{document}
+
+\clearpage
+\maketitle
+
+\section{Exercise 1}
+% a) and b)  test your understanding of intermediate and machine-code
+% generation. See class lectures "Intermediate -Code Generation" and
+% "Machine Code", or Chapters 6 and 7  of "Introduction to Compiler
+% Design" book.
+%
+% (do not worry  about the order in which fresh IL variables are generated,
+% i.e., their numbers, as long as the translation is correct.)
+
+\subsection*{a \mdseries Translate expression {\tt gcd(x+y, y+1) * 2} to
+intermediate code. Place the result in {\tt t0} and assume that
+{\tt vtable=[x->v, y->w], ftable=[gcd->\_GCD\_].}}
+\begin{lstlisting}
+t4 := v
+t5 := w
+t6 := 1
+t7 := 2
+t2 := t4 + t5
+t3 := t5 + t6
+t1 := CALL _GCD_(t2,t3)
+t0 := t1 * t7
+\end{lstlisting}
+
+\newpage
+\subsection*{b \mdseries Translate the following statement, i.e., {\tt Stat}
+in grammar, to intermediate code, and then to MIPS code, where initially
+{\tt vtable=[a->v, b->w]}.}
+\begin{lstlisting}[language=C]
+while (b != 0) and (a/b != 0) {
+	if b < a then { a := a - b }
+			 else { b := b - a }
+}
+\end{lstlisting}
+\begin{lstlisting}
+v0 := v
+v1 := w
+v2 := 0
+
+	LABEL start
+		t2 := v1
+		t3 := v2
+		t4 := t3 = v2
+		t0 := not t4
+
+		t5 := t2 / t3
+		t6 := t5 = v2
+		t1 := not t6
+		
+		IF t0 and t1 THEN GOTO then ELSE GOTO finish
+		LABEL then
+			t7 := t2
+			t8 := t3
+			IF t7 < t8 THEN GOTO if ELSE GOTO else
+			LABEL if
+				t9 := v0
+				t10 := v1
+				v0 := t9 - t10
+			LABEL else
+				t9 := v1
+				t10 := v0
+				v1 := t9 - t10
+		GOTO start
+
+	LABEL finish
+\end{lstlisting}
+\lstinputlisting{exercise_1b.asm}
+
+\newpage
+\subsection*{c \mdseries Make pattern/replacement pairs as in the "Machine
+Code" lecture for each of the following intermediate-language instructions:\\
+\begin{center}
+	\begin{tabular}{|c|c|}
+		\hline
+		1 & {\tt rd := rs = rt} \\ \hline
+		2 & {\tt rd := !r} \\ \hline
+	\end{tabular}
+\end{center}
+where
+\begin{enumerate}[i]
+	\item = is an operator that returns 1 if its two arguments are equal and
+	0 if they are not.
+	\item ! is an operator that returns 1 if its argument is 0 and 0 if its
+	argument is different than 0.
+\end{enumerate}
+Use the subset of MIPS supported by Mips.sml. Try to use as few instructions
+and registers as you can in the translation.}
+For the first (1) intermediate language instruction I have that
+\begin{center}
+	\begin{tabular}{|c|l|}
+		\hline {\tt rd := rs = rt} &
+		\specialcell{\tt li rd, 1 \\ \tt beq rs, rt, eq \\ \tt nop \\ \tt li rd, 0 \\ \tt eq:} \\ \hline
+	\end{tabular}
+\end{center}
+And for the second (2) intermediate language instruction I get
+\begin{center}
+	\begin{tabular}{|c|c|}
+	 	\hline {\tt rd := !r} & {\tt xori rd, r, 1} \\ \hline
+	\end{tabular}
+\end{center}
+\newpage
+\section{Exercise 2}
+Assume we want to introduce a map higher-order array combinator in Paladim of
+type:
+\begin{center}
+	{\tt map : (a -> b) * (Array r a) -> (Array r b)}
+\end{center}
+where $a$ and $b$ are basic types, i.e., one of {\tt int}, {\tt char} or
+{\tt bool}, and $r$ is an arbitrary rank ({\tt int} variable). {\tt map}
+semantics is that it applies the function argument to each basic-type element
+of the (potentionally multi-dimensional) input array, and produces an array of
+same rank $r$ (and dimension sizes) as the input array, but of basic-element
+type $b$ i.e., an array of type {\tt (Array r b)}.
+
+For example if
+\begin{lstlisting}[language=C]
+function f(y : int) : int
+	return 2 * y;
+\end{lstlisting}
+and 
+\begin{lstlisting}[language=C]
+x : array of array of int;
+x := { {1, 2, 3}, {4, 5, 6} };
+\end{lstlisting}
+then {\tt map(f, x)} results in
+\begin{lstlisting}[language=C]
+{ {2, 4, 6}, {8, 10, 12} }
+\end{lstlisting}
+
+Assuming that a function {\tt f : int->char} is available (known), and that a
+variable {\tt x : array of array of int} is visible in the current scope;
+
+\subsection*{a \mdseries Translate the call {\tt map(f, x)} in Paladim (using
+while loops).}
+\lstinputlisting{map.pal}
+
+\subsection*{b \mdseries Implement the call {\tt map(f, x)} in Mips using the
+array layout from G-Assignment and the most efficient translation you can
+find. Assume vtable is {\tt [x -> regx]}
+{\tt ftable} is {\tt [f -> "\_f\_"]} and {\tt HP} is the heap pointer. You may
+also assume that you have a Mips instruction that calls a function, e.g.,
+{\tt Mips.CALL(f, [re])}.}
+% Hint: traverse the flat array representation)
+\begin{lstlisting}
+map:
+	# stack push omitted
+
+	la		$s0, _f_							# get the function address
+	ori		$s1, $regx, 0					# get the array address
+	ori		$s2, $zero, 2					# assume we know the rank (2)
+
+	# read the meta data
+	lw		$t0, 0($s1)						# get the first dimension
+	lw		$t1, 4($s1)						# get the second dimension
+	lw		$t2, 8($s1)						# get the stride
+	mul		$s3, $t0, $t1					# calculate the array size
+
+	# allocate array and store meta data
+	ori		$v1, $HP, 0						# get the heap pointer for the new array
+	addi	$HP, $HP, 16					# allocate header
+	sw		$t0, 0($v0)						# store the first dimension
+	sw		$t1, 4($v0)						# store the first dimension
+	sw		$t2, 8($v0)						# store the stride
+	sw		$HP, 12($v0)					# store the array pointer
+	addi	$HP, $HP, 24					# allocate data
+
+	# prepare to loop
+	lw		$t0, 12($s1)					# get the array pointer
+	la 		$t0, $t0
+	lw 		$t1, 12($v0)					# get the new array pointer
+	la 		$t1, $t1
+
+	ori		$t2, $zero, 0					# counter, could break on address instead
+
+	loop:
+	lw		$a0, 0($t0)						# get the element
+	CALL	$s0										# apply the function f, result expected in $v0
+	sw		$v0, 0($t1)						# store the result
+
+	addi	$t0, $t0, 4						# point to next element
+	addi	$t1, $t1, 4						# point to next element
+
+	beq		$t2, $s3, end_loop
+	nop
+	j loop
+	end_loop:
+
+	ori		$v0, $v1							# move return value into correct register
+	
+	# stack pop omitted
+	
+	jr $ra											# return (value stored in $v0)
+
+\end{lstlisting}
+The above code was written under the assumption that it need not be run, but
+simply serves to show pseudo-wise how it might be evaluated as mips assembly.
+
+\subsection*{c \mdseries Which version would be more efficient and Why?
+(Between 2.b.) and the translation to machine code of the Paladim program in
+2.a.)}
+The most efficient of these implementations of map is the MIPS version, as it
+traverses the flat array representation by pointer arithmetic, rather than
+looking up the address of each individual entry of the array.
+
+\end{document}
