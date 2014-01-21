@@ -1,0 +1,111 @@
+%
+% for-loop.tex
+%
+% Documentation of the for-loop implementation.
+%
+
+\section{For-loop}
+Since no preparatory implementation has been made for the \code{for}-loop, in
+order to implement the feature into the Paladim compiler we must; 1) introduce
+the keywords, such that they can be recognized during the lexical analysis
+stage, 2) add the token types and grammar, such that the statement can be
+parsed correctly, 3) ensure that the expressions that form the inductive
+variable and condition are of the proper type ---namely \code{int}-type--- in
+the type-checking stage, and lastly 4) generate the necessary machine
+instructions.
+
+\subsection{Introducing the keywords}
+The first thing we must do is to add the tokens to the parser in
+\file{Parser.grm} (\appref{ch:appendix|sec:code|sub:forloop-tokens}), such
+that they can be instantiated from the lexer.
+
+Having a way to recognize the keywords \code{for}, \code{to} and \code{downto}
+we can proceed to uncomment the abstract syntax tree definition in the files
+\file{AbSyn.sml} and \file{TpAbSyn.sml} (both are identical,
+\appref{ch:appendix|sec:code|sub:forloop-absyn}) of the \code{for}-loop, such
+that it could be instantiated.
+
+Now that we can instantiate the abstract syntax of a \code{for}-loop, we can
+go on to define the grammar of it back in \file{Parser.grm}
+(\appref{ch:appendix|sec:code|sub:forloop-grammar}). This, of course, also
+requires us to define the \code{LoopDir} type
+(\appref{ch:appendix|sec:code|sub:forloop-dirtype}), also in
+\file{Parser.grm}, which concludes our interest in the parser.
+
+Being able to parse the statement we can now safely introduce the lexical
+analysis in \file{Lexer.lex} to these new keywords (lines 13--15), such that
+we can allow for for parsing stage to get them
+(\appref{ch:appendix|sec:code|sub:forloop-lex}).
+
+\subsection{Type-checking}
+Since all keywords are now recognized in the lexical analysis stage and
+\code{for}-loop statements can be parsed correctly, we now have to type-check
+such statements (\appref{ch:appendix|sec:code|sub:forloop-type}). Since the
+inductive variable is used by the \code{for}-loop as a counter, I would reason
+that the initialization and condition expressions need to be of type
+\code{int}, as indicated to the type-checker on lines 6--7, for which the
+type of the resulting typed expressions is retrieved on lines 9--10, and
+verified that this is indeed the case on line 11. If they are both of type
+\code{int} we can return the typed \code{for}-loop statement, otherwise we
+raise an exception.
+
+\newpage
+\subsection{Machine-code generation}
+The type-checked \code{for}-loop statements are now ready to be generated into
+machine code. In \file{Compiler.sml} we add a new case to the
+\code{compileStmt}. I suspect the specific case where its parameters include
+the \code{exitLabel} is in preparation of introducing\footnote{This is
+{\it not} part of my task set.} the keywords \code{break} and \code{continue},
+then I reason that it should be included in the argument list, instead of
+leaving a wildcard, such that we can reference that variable at a later time
+if needed.
+
+\paragraph{Compiled assembly structure}
+To produce the necessary machine code
+(\appref{ch:appendix|sec:code|sub:forloop-machinecode}), as done in
+\file{Compiler.sml}, is relatively straightforward. The only quirky detail
+worth elaborating on is how we will handle the loop condition; I reason that
+going from $a$ to $b$ means that we need to stop iterating at {\it or} after
+going past $b$, regardless of the direction.
+\begin{enumerate}
+	\item Retrieve the register in which the inductive variable exists (line
+	2)
+	\item Compile the initialization and condition expressions into their
+	respective register locations (\code{loc} and \code{check}, lines 7--8),
+	as well as the statement block.
+	\item If the direction of the \code{for}-loop is positve (e.g. \code{for
+	\dots to}) then increase the inductive variable by one after each pass
+	(line 10), otherwise (e.g. \code{for \dots downto}) then decrease the
+	inductive variable by one after each pass (line 11)
+	\item Place the assembly in order; compilation of initializations (line
+	13) and the entry loop label
+	\item If the direction of the \code{for}-loop is positive (e.g. \code{for
+	\dots to}) then set the flag register \code{lflag} if the condition is
+	less than the inductive variable (line 16), otherwise negative (e.g.
+	\code{for \dots to}) then set the flag register \code{lflag} if the
+	inductive variables is less than the condition (line 17)
+	\item Branch out of the loop if the flag is {\it not} zero\footnote{Note
+	that this is compared to a register which contains the value zero at all
+	times} (line 18)
+	\item Place the statement block code immediately followed by the direction
+	code, and lastly the loop jump instruction and exit label (lines 19--20)
+\end{enumerate}
+
+\subsection{Evaluation}
+In a program (\appref{ch:appendix|sec:testcases|sub:for-assert}) based
+largely on the example given in the task assignment text, in lack of
+imagination, a number is asked of
+with which it produces an array of integers. The array is filled in, using a
+\code{for-to} statement with values $i + 1$. In the same manner, only this
+time using a \code{for-downto} statement the array values are decremented
+by 1.
+
+The invariant maintained is that at the end $a[i] = i,{\ }\forall i < n$,
+where $n$ is the dimension of the array $a$. A test procedure then performs an assertion
+test on each index into $a$ by \code{AND}'ing the expression for all $i < n$.
+If the result of this conjunction is \code{true} then all fulfill the
+invariant, if not, however, the assertion fails. In any case the result is
+output to the console as either {\it Passed!} or {\it Failed!}.
+
+For reference, the results of this test
+(\appref{ch:appendix|sec:tests|sub:forloop}) has been supplied in the appendix.

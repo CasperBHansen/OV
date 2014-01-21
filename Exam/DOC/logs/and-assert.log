@@ -1,0 +1,15 @@
+Integer Tests
+10 ^ 8 = 8	Passed!
+10 ^ 4 = 0	Passed!
+6 ^ 2 = 2	Passed!
+6 ^ 4 = 4	Passed!
+
+Character Tests
+a ^ a = a	Passed!
+a ^ b = `	Passed!
+
+Boolean Tests
+0 ^ 0 = 0	Passed!
+0 ^ 1 = 0	Passed!
+1 ^ 0 = 0	Passed!
+1 ^ 1 = 1	Passed!

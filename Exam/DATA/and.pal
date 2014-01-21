@@ -1,0 +1,91 @@
+program And;
+
+procedure int_test()
+var n : int;
+	i : int;
+	j : int;
+	
+	is : array of int;
+
+begin
+	write("Integer Test\n");
+	write("Enter a number: ");
+	n := read();
+	is := new(n);
+	
+	i := 0;
+	while i < n do
+	begin
+		write("Int[");
+		write(i);
+		write("] := ");
+		is[i] := read();
+		i := i + 1;
+	end;
+	write("\n");
+	
+	i := 0;
+	while i < n do
+	begin
+		j := 0;
+		while j < n do
+		begin
+			write(is[i]);
+			write(" ^ ");
+			write(is[j]);
+			write(" = ");
+			write(is[i] and is[j]);
+			write("\n");
+			j := j + 1;
+		end;
+		i := i + 1;
+	end;
+end;
+
+procedure char_test()
+var n : int;
+	i : int;
+	j : int;
+	
+	cs : array of char;
+
+begin
+	write("Character Test\n");
+	write("Enter a number: ");
+	n := read();
+	cs := new(n);
+	
+	i := 0;
+	while i < n do
+	begin
+		write("Char[");
+		write(i);
+		write("] := ");
+		cs[i] := read();
+		i := i + 1;
+	end;
+	write("\n");
+	
+	i := 0;
+	while i < n do
+	begin
+		j := 0;
+		while j < n do
+		begin
+			write(cs[i]);
+			write(" ^ ");
+			write(cs[j]);
+			write(" = ");
+			write(cs[i] and cs[j]);
+			write("\n");
+			j := j + 1;
+		end;
+		i := i + 1;
+	end;
+end;
+
+procedure main()
+begin
+	int_test();
+	char_test();
+end;

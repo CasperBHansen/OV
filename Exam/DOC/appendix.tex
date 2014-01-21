@@ -1,0 +1,113 @@
+%
+% appendix.tex
+%
+% Appendix
+%
+
+
+\appendix
+\label{ch:appendix}
+
+\section{Equations}
+\label{ch:appendix|sec:equations}
+
+\subsection{Array header size}
+\label{ch:appendix|sec:equations|sub:array-head-size}
+The total size of the header is given by the summation of the terms introduced
+under the stated assumptions in \ref{sec:map|sub:machinecode}. We can reduce
+these to a much simpler expression.
+\begin{align}
+	h_{size} &= r \cdot 4 \text{ bytes} +
+	(r - 1) \cdot 4 \text{ bytes} +
+	4 \text{ bytes} \\
+	h_{size} &= 4 (r \text{ bytes} +
+	(r - 1) \text{ bytes} +
+	1 \text{ byte}) \\
+	h_{size} &= 4 (r \text{ bytes} +
+	r \text{ bytes}) \\
+	h_{size} &= 4 \cdot 2 \cdot r \text{ bytes} \\
+	h_{size} &= 8 \cdot r \text{ bytes}
+\end{align}
+
+
+\newpage
+\section{Test cases}
+\label{ch:appendix|sec:testcases}
+
+\subsection{Assertion tests for \code{AND} operation}
+\label{ch:appendix|sec:testcases|sub:and-assert}
+\lstinputlisting{code/and-assert.pal}
+
+\subsection{Assertion tests for \code{map} function}
+\label{ch:appendix|sec:testcases|sub:map-assert}
+\lstinputlisting{code/map-assert.pal}
+
+\subsection{Assertion tests for \code{for}-loop}
+\label{ch:appendix|sec:testcases|sub:for-assert}
+\lstinputlisting{code/for-assert.pal}
+
+
+\newpage
+\section{Test results}
+\label{ch:appendix|sec:tests}
+
+\subsection{Bitwise {\tt AND} operation}
+\label{ch:appendix|sec:tests|sub:and-assert}
+\lstinputlisting{logs/and-assert.log}
+
+\subsection{Assert results of {\tt map} function}
+\label{ch:appendix|sec:tests|sub:map-assert}
+\lstinputlisting{logs/map-assert.log}
+
+\subsection{Assert results of {\tt for}-loop}
+\label{ch:appendix|sec:tests|sub:forloop}
+\lstinputlisting{logs/for-assert.log}
+
+
+\newpage
+\section{Code changes}
+\label{ch:appendix|sec:code}
+
+\subsection{Polymorphic {\tt AND} type-checking}
+\label{ch:appendix|sec:code|sub:and-type}
+\lstinputlisting{code/and-type.sml}
+
+\subsection{Bitwise {\tt AND} machine-code generation}
+\label{ch:appendix|sec:code|sub:and-machinecode}
+\lstinputlisting{code/and-machine.sml}
+
+\subsection{Type-checking the {\tt map} function}
+\label{ch:appendix|sec:code|sub:map-type}
+\lstinputlisting{code/map-type.sml}
+
+\subsection{Generating machine code for the {\tt map} function}
+\label{ch:appendix|sec:code|sub:map-machine}
+\lstinputlisting{code/map-machine.sml}
+
+\subsection{Tokens for {\tt for}-loops}
+\label{ch:appendix|sec:code|sub:forloop-tokens}
+\lstinputlisting{code/for-tokens.grm}
+
+\subsection{Direction type for {\tt for}-loops}
+\label{ch:appendix|sec:code|sub:forloop-dirtype}
+\lstinputlisting{code/for-dirtype.grm}
+
+\subsection{Parsing {\tt for}-loop grammar}
+\label{ch:appendix|sec:code|sub:forloop-grammar}
+\lstinputlisting{code/for-grammar.grm}
+
+\subsection{Abstract syntax {\tt for}-loop definition}
+\label{ch:appendix|sec:code|sub:forloop-absyn}
+\lstinputlisting{code/for-absyn.sml}
+
+\subsection{Lexical analysis of {\tt for}-loop keywords}
+\label{ch:appendix|sec:code|sub:forloop-lex}
+\lstinputlisting{code/for-lex.lex}
+
+\subsection{Type-checking {\tt for}-loops}
+\label{ch:appendix|sec:code|sub:forloop-type}
+\lstinputlisting{code/for-type.sml}
+
+\subsection{Generating {\tt for}-loop machine code}
+\label{ch:appendix|sec:code|sub:forloop-machinecode}
+\lstinputlisting{code/for-machine.sml}

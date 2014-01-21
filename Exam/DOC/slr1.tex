@@ -1,0 +1,387 @@
+%
+% slr1.tex
+%
+% The theoretical question.
+%
+
+\section{SLR(1) Parser Construction}
+We are given a grammar $G_{LR}$ defined as
+\begin{align}
+	G_{LR} :{\ }
+	&S' \imp S{\ }\text{\tt \$} 					\tag{0} \\
+	&S  \imp L = R{\ }|{\ }R 						\tag{1,2} \\
+	&L  \imp \text{\tt *}R{\ }|{\ }\text{\tt id} 	\tag{3,4} \\
+	&R  \imp L 										\tag{5}
+\end{align}
+where {\tt id}, {\tt *} and {\tt =} are terminals, and {\tt \$} denotes the
+end of input.
+
+\subsection{Combined NFA}
+\begin{figure}[H]
+	\begin{multicols}{2}
+	
+		First, we will construct the NFA fragments of the grammar $G_{LR}$. \\
+		\begin{centering}
+		\begin{tikzpicture}
+		[
+			transform shape,
+			scale=0.75,
+			align=center,
+			label/.style={draw=none, fill=none},
+			arrow/.style={->, thick, shorten <= 1pt, shorten >= 1pt}
+		]
+			\node[state,initial] 	(A) at ( 0.0,   0.0 ) {$A$};
+			\node[state] 			(B) at ( 2.0,   0.0 ) {$B$};
+			\node[state,accepting] 	(C) at ( 4.0,   0.0 ) {$C$};
+			
+			\node[state,initial] 	(D) at ( 0.0,  -2.0 ) {$D$};
+			\node[state] 			(E) at ( 2.0,  -2.0 ) {$E$};
+			\node[state] 			(F) at ( 4.0,  -2.0 ) {$F$};
+			\node[state,accepting] 	(G) at ( 6.0,  -2.0 ) {$G$};
+			
+			\node[state,initial] 	(H) at ( 0.0,  -4.0 ) {$H$};
+			\node[state,accepting] 	(I) at ( 2.0,  -4.0 ) {$I$};
+			
+			\node[state,initial] 	(J) at ( 0.0,  -6.0 ) {$J$};
+			\node[state] 			(K) at ( 2.0,  -6.0 ) {$K$};
+			\node[state,accepting] 	(L) at ( 4.0,  -6.0 ) {$L$};
+			
+			\node[state,initial] 	(M) at ( 0.0,  -8.0 ) {$M$};
+			\node[state,accepting] 	(N) at ( 2.0,  -8.0 ) {$N$};
+			
+			\node[state,initial] 	(O) at ( 0.0, -10.0 ) {$O$};
+			\node[state,accepting] 	(P) at ( 2.0, -10.0 ) {$P$};
+			
+			\node[label] 	(AB) at ( 1.0,  0.5 ) {$S$};
+			\node[label] 	(BC) at ( 3.0,  0.5 ) {\tt\$};
+			\node[label] 	(DE) at ( 1.0, -1.5 ) {$L$};
+			\node[label] 	(EF) at ( 3.0, -1.5 ) {\tt =};
+			\node[label] 	(FG) at ( 5.0, -1.5 ) {$R$};
+			\node[label] 	(HI) at ( 1.0, -3.5 ) {$R$};
+			\node[label] 	(JK) at ( 1.0, -5.5 ) {\tt *};
+			\node[label] 	(KL) at ( 3.0, -5.5 ) {$R$};
+			\node[label] 	(MN) at ( 1.0, -7.5 ) {\tt id};
+			\node[label] 	(OP) at ( 1.0, -9.5 ) {$L$};
+			
+			\foreach \from/\to in
+			{A/B,B/C,
+			 D/E,E/F,F/G,
+			 H/I,
+			 J/K,K/L,
+			 M/N,
+			 O/P}
+			\draw[arrow] (\from) -> (\to);
+		
+		\end{tikzpicture}
+		\end{centering}
+		\vfill
+		
+		\columnbreak
+		
+		Now that we have the NFA fragments, we can construct the combined NFA,
+		simply by setting $A$ as the initial state only and adding in the
+		$\epsilon$-transitions (shown in red).
+		\begin{centering}
+		\begin{tikzpicture}
+		[
+			transform shape,
+			scale=0.75,
+			align=center,
+			label/.style={draw=none, fill=none},
+			arrow/.style={->, thick, shorten <= 1pt, shorten >= 1pt}
+		]
+			\node[state,initial] 	(A) at ( 0.0,   0.0 ) {$A$};
+			\node[state] 			(B) at ( 2.0,   0.0 ) {$B$};
+			\node[state,accepting] 	(C) at ( 4.0,   0.0 ) {$C$};
+			
+			\node[state] 			(D) at ( 0.0,  -2.0 ) {$D$};
+			\node[state] 			(E) at ( 2.0,  -2.0 ) {$E$};
+			\node[state] 			(F) at ( 4.0,  -2.0 ) {$F$};
+			\node[state,accepting] 	(G) at ( 6.0,  -2.0 ) {$G$};
+			
+			\node[state] 			(H) at ( 0.0,  -4.0 ) {$H$};
+			\node[state,accepting] 	(I) at ( 2.0,  -4.0 ) {$I$};
+			
+			\node[state] 			(J) at ( 0.0,  -6.0 ) {$J$};
+			\node[state] 			(K) at ( 2.0,  -6.0 ) {$K$};
+			\node[state,accepting] 	(L) at ( 4.0,  -6.0 ) {$L$};
+			
+			\node[state] 			(M) at ( 0.0,  -8.0 ) {$M$};
+			\node[state,accepting] 	(N) at ( 2.0,  -8.0 ) {$N$};
+			
+			\node[state] 			(O) at ( 0.0, -10.0 ) {$O$};
+			\node[state,accepting] 	(P) at ( 2.0, -10.0 ) {$P$};
+			
+			\node[label] 	(F1) at ( 8.0,  0.0 ) {$0$};
+			\node[label] 	(F2) at ( 8.0, -2.0 ) {$1$};
+			\node[label] 	(F3) at ( 8.0, -4.0 ) {$2$};
+			\node[label] 	(F4) at ( 8.0, -6.0 ) {$3$};
+			\node[label] 	(F5) at ( 8.0, -8.0 ) {$4$};
+			\node[label] 	(F6) at ( 8.0,-10.0 ) {$5$};
+
+			\node[label] 	(AB) at ( 1.0,  0.5 ) {$S$};
+			\node[label] 	(BC) at ( 3.0,  0.5 ) {\tt\$};
+			\node[label] 	(DE) at ( 1.0, -1.5 ) {$L$};
+			\node[label] 	(EF) at ( 3.0, -1.5 ) {\tt =};
+			\node[label] 	(FG) at ( 5.0, -1.5 ) {$R$};
+			\node[label] 	(HI) at ( 1.0, -3.5 ) {$R$};
+			\node[label] 	(JK) at ( 1.0, -5.5 ) {\tt *};
+			\node[label] 	(KL) at ( 3.0, -5.5 ) {$R$};
+			\node[label] 	(MN) at ( 1.0, -7.5 ) {\tt id};
+			\node[label] 	(OP) at ( 1.0, -9.5 ) {$L$};
+			
+			\foreach \from/\to in
+			{A/B,B/C,
+			 D/E,E/F,F/G,
+			 H/I,
+			 J/K,K/L,
+			 M/N,
+			 O/P}
+			\draw[arrow] (\from) -> (\to);
+			
+			\foreach \from/\to in {}
+			\draw[arrow,red] (\from) -> (\to);
+			\foreach \from/\to in {A/D,O/M}
+			\draw[arrow,blue] (\from) -> (\to);
+			\draw[arrow,red] (A) to[out=225,in=135,looseness=1.0] (H);
+			\draw[arrow,blue] (D) to[out=225,in=135,looseness=1.0] (M);
+			\draw[arrow,blue] (D) to[out=225,in=135,looseness=1.0] (J);
+			\draw[arrow,red] (H) to[out=225,in=135,looseness=1.0] (O);
+			\draw[arrow,red] (F) to[out=315,in=315,looseness=2.0] (O);
+			\draw[arrow,red] (K) to[out=315,in=315,looseness=2.0] (O);
+			\draw[arrow,blue] (O) to[out=135,in=225,looseness=1.0] (J);
+		
+		\end{tikzpicture}
+		\end{centering}
+		\vfill
+		
+	\end{multicols}
+	
+	\caption{Non-deterministic finite automaton fragments}
+	\label{fig:nfa-fragments}
+
+\end{figure}
+
+\subsection{Equivalent DFA}
+\label{sec:slr1|sub:dfa}
+Having the {\it non-deterministic} finite automaton, we can proceed to build
+the equivalent {\it deterministic} finite automaton. We do this by calculating
+the $\epsilon$-closures of the NFA.
+\vspace{-0.50in}
+\begin{multicols}{2}
+	
+	\center
+	\begin{align}
+		{\ } \nonumber \\
+		S_{0} &= \hat{\epsilon}(\{A\})
+		= \{A,D,H,J,M,O\} \not\subset F \\
+		S_{1} &= \hat{\epsilon}(\{B\})
+		= \{B\} \not\subset F \\
+		S_{2} &= \hat{\epsilon}(\{C\})
+		= \{\text{\bf C}\} \subset F \\
+		S_{3} &= \hat{\epsilon}(\{E,P\})
+		= \{E,\text{\bf P}\} \subset F \\
+		S_{4} &= \hat{\epsilon}(\{F\})
+		= \{F,J,M,O\} \not\subset F
+	\end{align}
+	\vfill
+	
+	\columnbreak
+	
+	\center
+	\begin{align}
+		S_{5} &= \hat{\epsilon}(\{G\})
+		= \{\text{\bf G}\} \subset F \\
+		S_{6} &= \hat{\epsilon}(\{I\})
+		= \{\text{\bf I}\} \subset F \\
+		S_{7} &= \hat{\epsilon}(\{K\})
+		= \{J,M,K,O\} \not\subset F \\
+		S_{8} &= \hat{\epsilon}(\{L\})
+		= \{\text{\bf L}\} \subset F \\
+		S_{9} &= \hat{\epsilon}(\{N\})
+		= \{\text{\bf N}\} \subset F
+	\end{align}
+	\vfill
+	
+\end{multicols}
+With the $\epsilon$-closures calculated, we can then produce the DFA table
+\begin{figure}[H]
+	
+	\center
+	\begin{tabular}{|c|l||c|c|c|c||c|c|c|}
+		\hline
+		{\scriptsize\bf DFA state} & {\scriptsize\bf NFA states} &
+		{\bf\tt id} & {\bf\tt *} & {\bf\tt =} & {\bf\tt \$} &
+		{\bf $S$} & {\bf $L$} & {\bf $R$} \\ \hline
+	% 	DFA   NFA 			   id    *     =     $     S     L     R
+		0	& $\{A,D,H,J,M,O\}$
+							&$s_9$&$s_7$&$   $&$   $&$g_1$&$g_3$&$g_6$
+		\\  \hline
+		1	& $\{B\}$		&$   $&$   $&$   $&$ a $&$   $&$   $&$   $
+		\\  \hline
+		2	& $\{C\}$		&$   $&$   $&$   $&$   $&$   $&$   $&$   $
+		\\  \hline
+		3	& $\{E,P\}$		&$   $&$   $&$s_4$&$   $&$   $&$   $&$   $
+		\\  \hline
+		4	& $\{F,J,M,O\}$	&$s_9$&$s_7$&$   $&$   $&$   $&$g_3$&$g_5$
+		\\  \hline
+		5	& $\{G\}$		&$   $&$   $&$   $&$   $&$   $&$   $&$   $
+		\\  \hline
+		6	& $\{I\}$		&$   $&$   $&$   $&$   $&$   $&$   $&$   $
+		\\  \hline
+		7	& $\{J,K,M,O\}$	&$s_9$&$s_7$&$   $&$   $&$   $&$g_3$&$g_8$
+		\\  \hline
+		8	& $\{L\}$		&$   $&$   $&$   $&$   $&$   $&$   $&$   $
+		\\  \hline
+		9	& $\{N\}$		&$   $&$   $&$   $&$   $&$   $&$   $&$   $
+		\\  \hline
+	\end{tabular}
+	
+	\caption{DFA SLR table}
+	\label{fig:slr-table}
+
+\end{figure}
+From the table we plot in the DFA by following the transitions into their
+respective states.
+\begin{figure}[H]
+	\center
+	\begin{tikzpicture}
+		[
+			transform shape,
+			scale=1.0,
+			align=center,
+			label/.style={draw=none, fill=none},
+			arrow/.style={->, thick, shorten <= 1pt, shorten >= 1pt}
+		]
+			\node[state,initial above] 	(s0)  at (  0.0 ,  0.0 ) {$S_0$};
+			\node[state] 			(s1)  at ( -2.0 ,  2.0 ) {$S_1$};
+			\node[state,accepting] 	(s2)  at ( -4.0 ,  2.0 ) {$S_2$};
+			\node[state,accepting] 	(s3)  at (  2.0 ,  2.0 ) {$S_3$};
+			\node[state] 			(s4)  at (  4.0 ,  0.0 ) {$S_4$};
+			\node[state,accepting] 	(s5)  at (  6.0 ,  0.0 ) {$S_5$};
+			\node[state,accepting] 	(s6)  at ( -2.0 , -2.0 ) {$S_6$};
+			\node[state] 			(s7)  at (  2.0 , -2.0 ) {$S_7$};
+			\node[state,accepting] 	(s8)  at (  6.0 , -2.0 ) {$S_8$};
+			\node[state,accepting] 	(s9)  at (  2.0 ,  0.0 ) {$S_9$};
+			
+			\node[label] 	(s0s1)   at ( -0.75 ,  1.25 ) {$S$};
+			\node[label] 	(s1s2)   at ( -3.00 ,  2.50 ) {\tt \$};
+			\node[label] 	(s0s3)   at (  0.75 ,  1.25 ) {$L$};
+			\node[label] 	(s0s6)   at ( -0.75 , -1.25 ) {$R$};
+			\node[label] 	(s0s7)   at (  0.75 , -1.25 ) {\tt *};
+			\node[label] 	(s0s9)   at (  1.00 , -0.25 ) {\tt id};
+			\node[label] 	(s3s4)   at (  3.50 ,  1.50 ) {\tt =};
+			\node[label] 	(s4s3)   at (  2.50 ,  0.50 ) {$L$};
+			\node[label] 	(s4s5)   at (  5.00 ,  0.25 ) {$R$};
+			\node[label] 	(s4s7)   at (  3.25 , -1.25 ) {\tt *};
+			\node[label] 	(s4s9)   at (  3.00 , -0.25 ) {\tt id};
+			\node[label] 	(s7s7)   at (  2.00 , -3.25 ) {\tt *};
+			\node[label] 	(s7s8)   at (  4.00 , -1.50 ) {$R$};
+			
+			\foreach \from/\to in
+			{s0/s1,s0/s3,s0/s6,s0/s7,s0/s9,
+			 s1/s2,
+			 s4/s5,s4/s7,s4/s9,
+			 s7/s8,s7/s9}
+			\draw[arrow] (\from) -> (\to);
+			
+			\draw[arrow] (s3) to[out=337.5,in=112.5,looseness=1.0] (s4);
+			\draw[arrow] (s4) to[out=157.5,in=297.5,looseness=1.0] (s3);
+			\draw[arrow] (s7) to[out=292.5,in=247.5,looseness=4.0] (s7);
+	\end{tikzpicture}
+	\label{fig:dfa}
+	\caption{Deterministic finite automaton}
+\end{figure}
+And that concludes the conversion from the {\it non-deterministic finite
+automaton} into the {\it deterministic finite automaton}.
+
+\newpage
+\subsection{Follow sets}
+\begin{multicols}{2}
+	
+	\noindent
+	First, we list the constraints deduced from the grammar.
+	\paragraph{Constraints}{\ }\\
+	We start by looking at $S$, and we get that
+	\begin{align}
+		FOLLOW(S) &\subseteq FOLLOW(L) \\
+		FOLLOW(S) &\subseteq FOLLOW(R)
+	\end{align}
+	because $L$ and $R$ occur on the right-hand side of the productions of
+	$S$.
+	
+	Further, we have that
+	\begin{align}
+		FOLLOW(L) &\subseteq FOLLOW(R) \\
+		FOLLOW(R) &\subseteq FOLLOW(L)
+	\end{align}
+	\vfill
+	
+	\columnbreak
+	
+	Since $R$ is in the $FOLLOW$ of $L$, and vice versa, then by the
+	constraints above we have that,
+	\vspace{-0.15in}
+	\begin{align}
+		FOLLOW(L) &= FOLLOW(R) \label{eqn:follow-lr}
+	\end{align}
+	
+	\paragraph{Follow sets}{\ }\\
+	And now we can determine what follows from $L$, and hence also follows
+	$R$ by (\ref{eqn:follow-lr}).
+	\vspace{-0.15in}
+	\begin{align}
+		FOLLOW(S) &= \{\$\} \\
+		FOLLOW(L) &= \{=, \$\} \\
+		FOLLOW(R) &= \{=, \$\}
+	\end{align}
+	Thus those are our follow sets.
+	\vfill
+	
+\end{multicols}
+
+\subsection{Reduce actions}
+In determining the reduce actions, we will use and continue to plot into the
+SLR table (fig. ~\ref{fig:slr-table}) computed in \ref{sec:slr1|sub:dfa} on
+page \pageref{sec:slr1|sub:dfa}.
+\begin{figure}[H]
+	
+	\center
+	\begin{tabular}{|c|l||c|c|c|c||c|c|c|}
+		\hline
+		{\scriptsize\bf DFA state} & {\scriptsize\bf NFA states} &
+		{\bf\tt id} & {\bf\tt *} & {\bf\tt =} & {\bf\tt \$} &
+		{\bf $S$} & {\bf $L$} & {\bf $R$} \\ \hline
+	% 	DFA   NFA 			   id    *     =     $     S     L     R
+		0	& $\{A,D,H,J,M,O\}$
+							&$s_9$&$s_7$&$   $&$   $&$g_1$&$g_3$&$g_6$
+		\\  \hline
+		1	& $\{B\}$		&$   $&$   $&$   $&$ a $&$   $&$   $&$   $
+		\\  \hline
+		2	& $\{C\}$		&$   $&$   $&$   $&$r_0$&$   $&$   $&$   $
+		\\  \hline
+		3	& $\{E,P\}$		&$   $&$   $&$s_4/r_5$&$r_5$&$   $&$   $&$   $
+		\\  \hline
+		4	& $\{F,J,M,O\}$	&$s_9$&$s_7$&$   $&$   $&$   $&$g_3$&$g_5$
+		\\  \hline
+		5	& $\{G\}$		&$   $&$   $&$r_1$&$r_1$&$   $&$   $&$   $
+		\\  \hline
+		6	& $\{I\}$		&$   $&$   $&$r_2$&$r_2$&$   $&$   $&$   $
+		\\  \hline
+		7	& $\{J,K,M,O\}$	&$s_9$&$s_7$&$   $&$   $&$   $&$g_3$&$g_8$
+		\\  \hline
+		8	& $\{L\}$		&$   $&$   $&$r_3$&$r_3$&$   $&$   $&$   $
+		\\  \hline
+		9	& $\{N\}$		&$   $&$   $&$r_4$&$r_4$&$   $&$   $&$   $
+		\\  \hline
+	\end{tabular}
+	
+	\label{fig:reduce-actions}
+	\caption{Reduce actions}
+
+\end{figure}
+\subsection{Shift-reduce conflict}
+As we can see from figure \ref{fig:reduce-actions}, there is a {\it
+shift-reduce conflict} for the production rule of $L$. This means that we do
+not have a unique choice in that case, making the $G_{LR}$ grammar ambiguous.
+

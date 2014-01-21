@@ -1,0 +1,74 @@
+%
+% and-op.tex
+%
+% The documentation of the AND-operation extension.
+%
+
+\section{Bitwise AND operation}
+In the implementation handed out, the type-checker (\file{Type.sml}) checks
+that the operands of an \code{AND}-operation are of type \code{bool}. We would
+like to extend this to accommodate the types \code{int} and \code{char}, for
+which such expressions the evaluation must be bitwise.
+
+\subsection{Type-checking}
+First, we must allow the expression operands to be polymorphic, while still
+maintaining that both operands should be of the same basic type. We do this by
+altering the \code{typeCheckExp} function in \file{Type.sml}
+(\appref{ch:appendix|sec:code|sub:and-type}). To reflect that the
+function should accept operands of any basic type, as long as they are of the
+same type, we would no longer infer the operand expressions to be of any
+particular type, hence we passed an expected type of \code{UnknownType} on
+lines 2--3. Having done so, we simply need to check whether or not the
+operands are of the same basic type, and we do this one line 5, after having
+retrieved their respective types on line 4. If they are of the same basic
+type we return the typed expression on line 6, otherwise we raise an error on
+lines 7--8. 
+
+\subsection{Machine-code generation}
+Now that the type-checker will allow polymorphic types, we can turn our
+attention to the machine-code generation --- the code changes described occur
+in \file{Compiler.sml} (\appref{ch:appendix|sec:code|sub:and-machinecode}). I
+reason my implementation of the \code{AND}-operator by recognizing that
+\code{AND}'ed expressions of operand-type \code{bool} type must remain as is.
+However, since both \code{int} and \code{char} should be handled in the same
+manner, in any other case we can assume that this is a bitwise
+\code{AND}-operation.
+
+By this reasoning we arrive at the conclusion that we need only check, as
+done on line 7, whether or not the operands are of type \code{bool}. If that
+is the case then we need only do what was already done, now on lines 8-11. In
+any other case (hence the wildcard case) we can assume that we should handle
+this case as a bitwise operation, as done on line 12. In both cases we do, of
+course still need to compile (lines 2--5), as was already done before, and
+prepend the code (line 12) of the operands.
+
+\subsection{Precedence}
+I would argue, that bitwise operations should have higher precedence than any
+logical (boolean) operation. For instance the expression \code{a and b = c and
+d} should evaluate as \code{(a and b) == (c and d)}, for the simple reason
+that more often than not you would like this behavior --- especially when
+working with bitmasks, where you would \code{AND} or \code{OR} together a
+series of enumerations and then compare the result with another mask.
+
+Now, I did state {\it any} bitwise operation, and I did state {\it any}
+logical operation, therefore there needs to be a distinction between these
+operators, as there is in languages like C++, Java, etc. So the implications
+for the implementation must introduce new operators specific such that such a
+distinction can be made by the parser, and hence compiler. C++ for instance
+uses \code{\&\&} for logical \code{AND}, and \code{\&} for bitwise.
+
+\subsection{Evaluation}
+In evaluating the extension of the \code{AND}-operator, I have carried out a
+few simple assertion tests (\appref{ch:appendix|sec:testcases|sub:and-assert})
+The tests are constructed by writing a procedure for each datatype, taking
+three arguments; a left-hand side, right-hand side and an expected value. The
+procedure carries out the \code{AND}-operation on the passed left-hand side
+and right-hand side and compares the result to the expected result value. If
+the result is equal to the expected value it writes ``Passed!'' to the
+console, and if not it writes ``Failed''. For the results of this test program
+\appref{ch:appendix|sec:tests|sub:and-assert}.
+
+A separate Paladim program has been supplied for evaluating expressions
+interactively --- compile and run the \file{DATA/and.pal} program to try it
+at your discretion with your own data to verify.
+

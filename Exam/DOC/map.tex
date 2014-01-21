@@ -1,0 +1,171 @@
+%
+% map.tex
+%
+% Documentation of the implementation of the higher-order map function.
+%
+
+\section{Map function}
+\label{sec:map}
+The \code{map} function has been prepared for implementation up until the
+type-checking stage of the compiler. In order to implement the \code{map}
+function we will need to check for a valid argument list, that the number and
+types of arguments matches according to the type rule
+(\txtref[Type Rule]{sec:map|sub:typecheck}) of the \code{map} function, since it is
+polymorphic.
+
+\subsection{Type-checking}
+\label{sec:map|sub:typecheck}
+The \code{map} function is polymorphic, therefore we need to establish a rule
+of type-checking calls to this function.
+
+\paragraph{Type rule}
+\begin{enumerate}
+	\item Exactly 2 arguments must be supplied
+	\item The first parameter must be a function \code{f}
+	\begin{enumerate}
+		\item Function \code{f} must take exactly one argument of type $\alpha$
+		\item Function \code{f} must return exactly one value of type $\beta$
+	\end{enumerate}
+	\item The second parameter must be an array \code{A} of basic type
+	$\alpha$
+\end{enumerate}
+
+In \file{Type.sml} (\appref{ch:appendix|sec:code|sub:map-type}) we ensure that
+when the \code{map} function gets called it will raise an exception if the
+argument list is not valid (e.g. the length is not exactly 2) by adding a case
+with exactly two arguments on line 1, and leaving the catch-all pattern (of
+the argument list) to raise the exception on lines 19--21. Expanding on that,
+exploiting the pattern-matching feature of SML in our favor we can further
+narrow the argument list of the accepting case down to only identifier
+expressions for the first argument and pulling out the corresponding
+identifier, again on line 1. This effectively takes care of the first and
+part of the second type rule clause, as defined above.
+
+Having the identifier of the supplied arguments available we can now look it
+up in the symbol table on lines 2--5, giving us the function argument and
+return types --- if the identifier is not found in the function table we raise
+an error, which completes the second type rule. We then type-check the second
+argument on line 7, and make sure it is an array on lines 9--11, pulling out
+the rank and basic type on line 8, producing an error if it is not an array,
+which takes care of part of the third type rule.
+
+Finally, knowing the types of the function and array arguments, we can check
+that 1) the function takes exactly one argument, and 2) the basic types of the
+function and array arguments are the same, according to type rules 2(a) and 3,
+all on line 13. If this is the case, we then return the typed \code{map}
+function call\footnote{The reason it is declared as a variable on line 14 is
+to do a correctness-check, as commented on line 15} on line 16, as defined in
+\file{TpAbSyn.sml}, otherwise raise an exception.
+
+\newpage
+\subsection{Machine code}
+\label{sec:map|sub:machinecode}
+As far as I can see from other parts of the code, I took a different approach
+as to how to traverse the arrays (I use three separate loops). This is
+probably a symptom of being used to high-level programming, as opposed to
+assembly programming. Nevertheless, it works as expected, and the only
+side-effect is that the program will take up slightly more space on disk, this
+doesn't make the implementation inefficient in terms of execution performance
+however.
+
+First, I will state my assumptions and hence reasoning how I implemented
+(\appref{ch:appendix|sec:code|sub:map-machine}) the compiled instructions for
+the \code{map} function.
+
+\paragraph{Assumptions}
+\begin{enumerate}
+	\item For an array $\alpha$ of rank $r$
+	\begin{enumerate}
+		\item The first $r \cdot 4$ bytes contains the dimensions of the array
+		$\alpha$.
+		\item The following $(r - 1) \cdot 4$ bytes contains the strides of
+		the array $\alpha$.
+		\item The following, and last $4$ bytes contains the pointer to the
+		actual array $\alpha$.
+	\end{enumerate}
+	\item It follows by simple arithmetic reduction
+	(\appref{ch:appendix|sec:equations|sub:array-head-size}) from (1) that an
+	array of
+	rank $r$ will have a header of size $h_{size} = 8 \cdot r$. And that
+	\begin{enumerate}
+		\item The bytes containing the dimensions are stored in the first
+		$\frac{h_{size}}{2}$ bytes.
+		\item The bytes containing the strides and array pointer are stored in
+		the following $\frac{h_{size}}{2}$ bytes.
+	\end{enumerate}
+\end{enumerate}
+
+Based on these assumptions, I will explain the compiled structure of the
+corresponding assembly instructions on the following page.
+
+\newpage
+\paragraph{Compiled assembly structure}
+\begin{enumerate}
+	\item Initialize registers; compile source array into register \code{src}
+	(line 13), copy the heap pointer into the result register \code{place}
+	(line 33), copy the address into the \code{dst} register (line 34) and
+	initialize the \code{size} register to a value of 1 (line 35)
+	\item Allocate half of the header (line 36) and loop through the bytes
+	containing the dimensions (lines 37--45)
+	\begin{enumerate}
+		\item Load the value at the address of \code{src} into the temporary
+		register \code{tmp} (line 39), and store at the address of \code{dst}
+		(line 40)
+		\item Multiply into \code{size} the current value at that register
+		with the value stored in \code{tmp} (line 41)
+	\end{enumerate}
+	\item Calculate the exact byte-aligned size of the array (lines 46--51)
+	\item Allocate the remainder of the header (line 52) and loop through the
+	bytes containing the strides and pointer, copying each one in \code{src}
+	into the corresponding address of \code{dst} (lines 53--60)
+	\item Since \code{dst} now holds the address of the source array, we need
+	to store the correct address, so we store the heap pointer into the
+	address of \code{dst}, but with an offset of $-4$ bytes, because the loop
+	took us exactly $4$ bytes past the correct address (line 61)
+	\item Allocate the array data segment by adding the contents of the
+	\code{size} register to the heap pointer, and loop through it (lines
+	63--71)
+	\begin{enumerate}
+		\item If the source is of type \code{int} load a word from \code{src}
+		into the temporary register \code{tmp}, otherwise load a byte (lines
+		65, calculated on lines 22--25)
+		\item Call the argument function on \code{tmp} and store its result
+		back into the same register (line 66)
+		\item If the destination is of type \code{int} store a wod from
+		\code{tmp} into the destination register \code{dst} (line 67,
+		calculated on lines 27--31)
+		\item Advance the address pointers \code{src} and \code{dst} by the
+		appropriate number of bytes (lines 68--69, calculated on lines 22--31)
+	\end{enumerate}
+\end{enumerate}
+
+\newpage
+\subsection{Efficiency}
+The most prominent efficiency topic to be discussed is probably the fact that
+the instructions does only what it needs to do, for the most part, although
+quite I'm sure that there are still some optimizations that could make it even
+faster.
+
+The reason I implemented it as three distinct loops is that it allows for
+intermediate computations while it loops. The first loop does the array size
+calculation, with a minor follow-up afterward to account for byte-alignment.
+The second does not depend on anything other than the header size, so it can
+simply do a direct copy, and with a minor follow-up to correct the array
+pointer immediately after. The last loop is highly dependent on previous
+calculations at run-time, and thus isolating this in its own loop allows for
+the flexibility needed.
+
+No code generated is obsolete either, since all dependencies have been
+accounted for and put into variables determined by these dependencies
+beforehand. This ensures little or no code bloating.
+
+\subsection{Evaluation}
+Testing of the implementation was done by assertion tests; that is, I wrote a
+Paladim program (see \appref{ch:appendix|sec:testcases|sub:map-assert}) which
+defines functions \code{f : $\alpha \imp \beta$} and \code{g : $\beta \imp
+\gamma$}. I then supplied a call to \code{map} with function \code{f} and an
+array containing elements of basic type $\alpha$, the result of which is piped
+through to a call to \code{map} with function \code{g}, the result of which is
+asserted to be some value of type $\gamma$. Each assertion outputs the result
+of the assertion (i.e. whether or not the assertion succeeded).
+

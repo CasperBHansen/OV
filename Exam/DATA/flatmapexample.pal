@@ -1,0 +1,44 @@
+program FlatMapExample;
+
+function f(c : char) : int
+	return ord(c);
+
+function g(n : int) : bool
+var i : int;
+begin
+	i := n;
+	while 0 < i do
+	begin
+		i := i - 2;
+	end;
+	
+	return (i = 0);
+end;
+
+procedure assertion(result : bool; expected : bool)
+begin
+	if result = expected then
+	begin
+		write("Passed!\n");
+	end
+	else
+	begin
+		write("Failed!\n");
+	end;
+end;
+
+procedure main()
+var c_arr : array of array of char;
+	i_arr : array of array of int;
+	b_arr : array of array of bool;
+begin
+	i_arr := map(f, { {'a','b','c'}, {'d','e','f'} });
+	b_arr := map(g, i_arr);
+	
+	assertion(b_arr[0,0], false);
+	assertion(b_arr[0,1], true);
+	assertion(b_arr[0,2], false);
+	assertion(b_arr[1,0], true);
+	assertion(b_arr[1,1], false);
+	assertion(b_arr[1,2], true);
+end;

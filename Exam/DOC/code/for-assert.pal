@@ -1,0 +1,52 @@
+program ForLoop;
+
+procedure itemAtIndex(a : array of int; i : int)
+begin
+	write("a[");
+	write(i);
+	write("] = ");
+	write(a[i]);
+	write("\n");
+end;
+
+procedure test(a : array of int; n : int)
+var i : int;
+	r : bool;
+begin
+	r := true;
+	
+	for i = 0 to n-1 do
+	begin
+		r := r and (a[i] = i);
+	end;
+	
+	if r then write("Passed!\n")
+	else write("Failed!\n");
+end;
+
+procedure main()
+var n : int;
+	i : int;
+	
+	a : array of int;
+begin
+	write("Enter a number: ");
+	n := read();
+	a := new(n);
+	
+	write("Going up..\n");
+	for i = 0 to n-1 do
+	begin
+		a[i] := i + 1;
+		itemAtIndex(a, i);
+	end;
+	
+	write("Going down again..\n");
+	for i = n-1 downto 0 do
+	begin
+		a[i] := a[i] - 1;
+		itemAtIndex(a, i);
+	end;
+	
+	test(a, n);
+end;

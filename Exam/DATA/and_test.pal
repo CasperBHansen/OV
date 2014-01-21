@@ -1,0 +1,76 @@
+program AndTest;
+
+procedure test_int(lhs : int; rhs : int; expected : int)
+var k : int;
+begin
+	k := lhs and rhs;
+	
+	write(lhs);
+	write(" ^ ");
+	write(rhs);
+	write(" = ");
+	write(k);
+	
+	if k = expected then
+	begin
+		write("\tPassed!\n");
+	end
+	else write("\tFailed!\n");
+end;
+
+procedure test_char(lhs : char; rhs : char; expected : char)
+var k : char;
+begin
+	k := lhs and rhs;
+	
+	write(lhs);
+	write(" ^ ");
+	write(rhs);
+	write(" = ");
+	write(k);
+	
+	if k = expected then
+	begin
+		write("\tPassed!\n");
+	end
+	else write("\tFailed!\n");
+end;
+
+procedure test_bool(lhs : bool; rhs : bool; expected : bool)
+var k : bool;
+begin
+	k := lhs and rhs;
+	
+	write(lhs);
+	write(" ^ ");
+	write(rhs);
+	write(" = ");
+	write(k);
+	
+	if k = expected then
+	begin
+		write("\tPassed!\n");
+	end
+	else write("\tFailed!\n");
+end;
+
+procedure main()
+begin
+	write("Integer Tests\n");
+	test_int(10,8,8);
+	test_int(10,4,0);
+	test_int(6,2,2);
+	test_int(6,4,4);
+	write("\n");
+	
+	write("Character Tests\n");
+	test_char('a','a','a');
+	test_char('a','b','`');
+	write("\n");
+	
+	write("Boolean Tests\n");
+	test_bool(false, false, false);
+	test_bool(false, true , false);
+	test_bool(true , false, false);
+	test_bool(true , true , true );
+end;

@@ -1,0 +1,89 @@
+%
+% report.tex
+%
+% The main document, which defines the structure of the report.
+%
+
+\documentclass[11pt]{article}
+
+
+%========== PACKAGES ==========%
+
+\usepackage{a4wide}
+\usepackage{amsmath}
+\usepackage{appendix}
+\usepackage[english]{babel}
+\usepackage{color}
+\usepackage{float}
+\usepackage[utf8]{inputenc}
+\usepackage{listings}
+\usepackage{multicol}
+\usepackage{tikz}
+
+\usetikzlibrary{automata,arrows,positioning}
+
+%========== DEFINITIONS & MACROS ==========%
+
+\definecolor{comment}{rgb}		{0.38, 0.62, 0.38}
+\definecolor{keyword}{rgb}		{0.10, 0.10, 0.81}
+\definecolor{identifier}{rgb}	{0.00, 0.00, 0.00}
+\definecolor{string}{rgb}		{0.50, 0.50, 0.50}
+
+\newcommand{\appref}[1]{see appendix \ref{#1} on page \pageref{#1}}
+\newcommand{\txtref}[2][]{see {\it #1} \ref{#2} on page \pageref{#2}}
+\newcommand{\code}[1]{{\tt #1}}
+\newcommand{\file}[1]{{\tt #1}}
+\newcommand{\imp}{\rightarrow}
+
+\lstset
+{
+	% general settings
+	numbers=left,
+	frame=single,
+	basicstyle=\footnotesize\ttfamily,
+	tabsize=2,
+	breaklines=true,
+	% syntax highlighting
+	commentstyle=\color{comment},
+	keywordstyle=\color{keyword},
+	identifierstyle=\color{identifier},
+	stringstyle=\color{string},
+}
+
+%========== DECLARATIONS ==========%
+
+\title
+{
+	{\Large Task Set 4} \\
+	Compiler Exam
+}
+
+\author
+{
+	Casper B. Hansen \\
+	University of Copenhagen \\
+	Department of Computer Science \\
+	{\tt fvx507@alumni.ku.dk}
+}
+
+\date{Last revision \today}
+
+
+\begin{document}
+
+\clearpage
+\maketitle
+\footnotesize
+\thispagestyle{empty}
+\normalsize
+\newpage
+\tableofcontents
+
+\include{slr1}
+\include{and-op}
+\include{map}
+\include{for-loop}
+\include{appendix}
+
+\end{document}
+

@@ -1,0 +1,12 @@
+Enter a number: 4
+Going up..
+a[0] = 1
+a[1] = 2
+a[2] = 3
+a[3] = 4
+Going down again..
+a[3] = 3
+a[2] = 2
+a[1] = 1
+a[0] = 0
+Passed!
